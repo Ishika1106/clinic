@@ -158,7 +158,7 @@
           <li>
             <a href="#contact" onclick="scrollToSection('contact')"
               class="nav-link px-4 py-2 rounded-full bg-secondary-blue text-white hover:bg-primary-indigo transition duration-300 shadow-md">
-              Contact & Book
+              Contact Us
             </a>
           </li>
         </ul>
@@ -173,17 +173,17 @@
 
       <div id="mobileMenu" class="md:hidden bg-white shadow-inner">
         <ul class="flex flex-col gap-2 p-4 font-semibold text-tertiary-slate">
-          <li><a href="#home" class="mobile-nav-link block p-3 rounded-lg hover:bg-blue-50">Home</a></li>
-          <li><a href="#specialties" class="mobile-nav-link block p-3 rounded-lg hover:bg-blue-50">Specialties</a></li>
-          <li><a href="#services" class="mobile-nav-link block p-3 rounded-lg hover:bg-blue-50">Services</a>
+          <li><a href="#home" onclick="closeMobileMenu()" class="mobile-nav-link block p-3 rounded-lg hover:bg-blue-50">Home</a></li>
+          <li><a href="#specialties" onclick="closeMobileMenu()" class="mobile-nav-link block p-3 rounded-lg hover:bg-blue-50">Specialties</a></li>
+          <li><a href="#services" onclick="closeMobileMenu()" class="mobile-nav-link block p-3 rounded-lg hover:bg-blue-50">Services</a>
           </li>
-          <li><a href="#reviews" class="mobile-nav-link block p-3 rounded-lg hover:bg-blue-50">Reviews</a>
+          <li><a href="#reviews" onclick="closeMobileMenu()" class="mobile-nav-link block p-3 rounded-lg hover:bg-blue-50">Reviews</a>
           </li>
-          <li><a href="#faq" class="mobile-nav-link block p-3 rounded-lg hover:bg-blue-50">FAQ</a></li>
+          <li><a href="#faq" onclick="closeMobileMenu()" class="mobile-nav-link block p-3 rounded-lg hover:bg-blue-50">FAQ</a></li>
           <li>
-            <a href="#contact"
+            <a href="#contact" onclick="closeMobileMenu(); scrollToSection('contact')"
               class="mobile-nav-link block mt-2 px-4 py-2 text-center rounded-full bg-secondary-blue text-white hover:bg-primary-indigo transition duration-300 shadow-md">
-              Contact & Book
+              Contact Us
             </a>
           </li>
         </ul>
@@ -261,11 +261,11 @@
               <li>Growth & Developmental Assessments</li>
             </ul>
             <div class="mt-auto flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-6">
-              <a href="#"
+              <a href="pediatrics.html"
                 class="inline-flex items-center text-secondary-blue font-semibold hover:text-primary-indigo transition">
                 More Services <i class="fas fa-chevron-right ml-2 text-sm"></i>
               </a>
-              <a href="#"
+              <a href="signup.html"
                 class="inline-flex items-center text-secondary-blue font-semibold hover:text-primary-indigo transition">
                 Book an Appointment <i class="fas fa-calendar-check ml-2 text-sm"></i>
               </a>
@@ -288,11 +288,11 @@
               <li>Home Sample Collection Facility</li>
             </ul>
             <div class="mt-auto flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-6">
-              <a href="#"
+              <a href="diagnostics.html"
                 class="inline-flex items-center text-secondary-blue font-semibold hover:text-primary-indigo transition">
                 More Services <i class="fas fa-chevron-right ml-2 text-sm"></i>
               </a>
-              <a href="#"
+              <a href="signup.html"
                 class="inline-flex items-center text-secondary-blue font-semibold hover:text-primary-indigo transition">
                 Book an Appointment <i class="fas fa-calendar-check ml-2 text-sm"></i>
               </a>
@@ -546,7 +546,6 @@
       </div>
     </div>
   </div>
-   <script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
-
 </html>
