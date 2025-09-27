@@ -38,6 +38,12 @@
     /* Carousel slide transitions */
     .carousel-slide {
       transition: opacity 0.7s ease-in-out;
+      position: absolute;
+      /* Ensure layering works */
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
     }
 
     .carousel-slide.active {
@@ -67,19 +73,6 @@
       animation: fadeIn 0.3s ease-out forwards;
     }
 
-    /* Override Tailwind colors for consistency */
-    .text-blue-500 {
-      color: #3b82f6;
-    }
-
-    .bg-blue-500 {
-      background-color: #3b82f6;
-    }
-
-    .hover\:bg-blue-400:hover {
-      background-color: #60a5fa;
-    }
-
     /* Navigation link hover styles */
     .nav-link:hover {
       color: #3730a3;
@@ -95,27 +88,53 @@
       overflow: hidden;
       max-height: 0;
       opacity: 0;
+      z-index: 40;
+      /* Ensure it is below the chatbot button but above content */
     }
 
     #mobileMenu.open {
       max-height: 500px;
-      /* Adjust based on content */
       opacity: 1;
     }
 
-    /* Mobile Chatbot Positioning */
+    /* CRITICAL FIX: Mobile Chatbot Positioning */
     @media (max-width: 767px) {
       #chatbot {
+        /* Overrides the 'absolute' used for desktop positioning */
+        position: fixed !important;
         bottom: 4rem;
-        /* Adjusted to be above the button */
+        /* Above the button */
         right: 1rem;
         width: calc(100vw - 2rem);
-        /* Full width minus margin */
+        z-index: 90;
+        /* Ensures it is above the menu */
+        margin-top: 0;
       }
     }
-  </style>
 
-  <script src="script.js" defer></script>
+    /* Ensure the fixed button container has the highest z-index */
+    .fixed.z-50 {
+      z-index: 99;
+    }
+
+    /* Chatbot typing animation */
+    @keyframes bounce {
+
+      0%,
+      80%,
+      100% {
+        transform: translateY(0);
+      }
+
+      40% {
+        transform: translateY(-4px);
+      }
+    }
+
+    .typing-indicator-container .dot {
+      animation: bounce 1s infinite;
+    }
+  </style>
 </head>
 
 <body class="font-sans text-gray-800 bg-gray-50 antialiased">
@@ -127,20 +146,24 @@
           Clinic</a>
 
         <ul class="hidden md:flex gap-8 font-semibold text-tertiary-slate">
-          <li><a href="#home" class="nav-link px-3 py-1 rounded-lg">Home</a></li>
-          <li><a href="#specialties" class="nav-link px-3 py-1 rounded-lg">Specialties</a></li>
-          <li><a href="#services" class="nav-link px-3 py-1 rounded-lg">Services</a></li>
-          <li><a href="#reviews" class="nav-link px-3 py-1 rounded-lg">Reviews</a></li>
-          <li><a href="#faq" class="nav-link px-3 py-1 rounded-lg">FAQ</a></li>
+          <li><a href="#home" onclick="scrollToSection('home')" class="nav-link px-3 py-1 rounded-lg">Home</a></li>
+          <li><a href="#specialties" onclick="scrollToSection('specialties')"
+              class="nav-link px-3 py-1 rounded-lg">Specialties</a></li>
+          <li><a href="#services" onclick="scrollToSection('services')"
+              class="nav-link px-3 py-1 rounded-lg">Services</a></li>
+          <li><a href="#reviews" onclick="scrollToSection('reviews')" class="nav-link px-3 py-1 rounded-lg">Reviews</a>
+          </li>
+          <li><a href="#faq" onclick="scrollToSection('faq')" class="nav-link px-3 py-1 rounded-lg">FAQ</a>
+          </li>
           <li>
-            <a href="#contact"
+            <a href="#contact" onclick="scrollToSection('contact')"
               class="nav-link px-4 py-2 rounded-full bg-secondary-blue text-white hover:bg-primary-indigo transition duration-300 shadow-md">
               Contact & Book
             </a>
           </li>
         </ul>
 
-        <button class="md:hidden flex flex-col gap-1 cursor-pointer p-2" id="mobileMenuBtn"
+        <button class="md:hidden flex flex-col gap-1 cursor-pointer p-2 z-[60]" id="mobileMenuBtn"
           aria-label="Toggle mobile menu">
           <span class="w-6 h-0.5 bg-primary-indigo rounded transition-all duration-300 transform" id="span1"></span>
           <span class="w-6 h-0.5 bg-primary-indigo rounded transition-all duration-300" id="span2"></span>
@@ -152,8 +175,10 @@
         <ul class="flex flex-col gap-2 p-4 font-semibold text-tertiary-slate">
           <li><a href="#home" class="mobile-nav-link block p-3 rounded-lg hover:bg-blue-50">Home</a></li>
           <li><a href="#specialties" class="mobile-nav-link block p-3 rounded-lg hover:bg-blue-50">Specialties</a></li>
-          <li><a href="#services" class="mobile-nav-link block p-3 rounded-lg hover:bg-blue-50">Services</a></li>
-          <li><a href="#reviews" class="mobile-nav-link block p-3 rounded-lg hover:bg-blue-50">Reviews</a></li>
+          <li><a href="#services" class="mobile-nav-link block p-3 rounded-lg hover:bg-blue-50">Services</a>
+          </li>
+          <li><a href="#reviews" class="mobile-nav-link block p-3 rounded-lg hover:bg-blue-50">Reviews</a>
+          </li>
           <li><a href="#faq" class="mobile-nav-link block p-3 rounded-lg hover:bg-blue-50">FAQ</a></li>
           <li>
             <a href="#contact"
@@ -173,7 +198,8 @@
         class="carousel-slide absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-white text-center p-6 active">
         <div class="max-w-4xl">
           <h2 class="text-4xl md:text-6xl font-extrabold text-primary-indigo mb-4">Expert Pediatric Care</h2>
-          <p class="text-gray-600 mb-8 text-lg md:text-xl max-w-2xl mx-auto">Compassionate healthcare for children from
+          <p class="text-gray-600 mb-8 text-lg md:text-xl max-w-2xl mx-auto">Compassionate healthcare for
+            children from
             infancy through adolescence by experienced specialists.</p>
           <button
             class="bg-primary-indigo text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:bg-secondary-blue transition duration-300"
@@ -184,8 +210,10 @@
       <div
         class="carousel-slide absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-white text-center p-6">
         <div class="max-w-4xl">
-          <h2 class="text-4xl md:text-6xl font-extrabold text-primary-indigo mb-4">Advanced Diagnostic Services</h2>
-          <p class="text-gray-600 mb-8 text-lg md:text-xl max-w-2xl mx-auto">State-of-the-art laboratory testing with
+          <h2 class="text-4xl md:text-6xl font-extrabold text-primary-indigo mb-4">Advanced Diagnostic
+            Services</h2>
+          <p class="text-gray-600 mb-8 text-lg md:text-xl max-w-2xl mx-auto">State-of-the-art laboratory
+            testing with
             accurate results and expert pathology analysis.</p>
           <button
             class="bg-primary-indigo text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:bg-secondary-blue transition duration-300"
@@ -196,8 +224,10 @@
       <div
         class="carousel-slide absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-white text-center p-6">
         <div class="max-w-4xl">
-          <h2 class="text-4xl md:text-6xl font-extrabold text-primary-indigo mb-4">Your Health, Our Priority</h2>
-          <p class="text-gray-600 mb-8 text-lg md:text-xl max-w-2xl mx-auto">Patient-centered and comprehensive medical
+          <h2 class="text-4xl md:text-6xl font-extrabold text-primary-indigo mb-4">Your Health, Our Priority
+          </h2>
+          <p class="text-gray-600 mb-8 text-lg md:text-xl max-w-2xl mx-auto">Patient-centered and comprehensive
+            medical
             services focused on clinical excellence.</p>
           <button
             class="bg-primary-indigo text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:bg-secondary-blue transition duration-300"
@@ -210,7 +240,8 @@
 
     <section id="specialties" class="py-16 md:py-24 bg-white">
       <div class="max-w-7xl mx-auto px-4 md:px-8">
-        <h2 class="text-3xl md:text-4xl font-extrabold text-center text-primary-indigo mb-12 md:mb-16">Our Core Medical
+        <h2 class="text-3xl md:text-4xl font-extrabold text-center text-primary-indigo mb-12 md:mb-16">Our Core
+          Medical
           Specialties</h2>
         <div class="grid md:grid-cols-2 gap-10">
 
@@ -221,7 +252,8 @@
               <i class="fas fa-child"></i>
             </div>
             <h3 class="text-xl md:text-2xl font-bold text-primary-indigo mb-3">Pediatric Care</h3>
-            <p class="text-gray-600 mb-4">A complete range of services focused on the unique medical needs of children,
+            <p class="text-gray-600 mb-4">A complete range of services focused on the unique medical needs of
+              children,
               ensuring healthy growth and development.</p>
             <ul class="list-disc list-inside text-gray-600 mb-6 space-y-1 pl-4 text-sm">
               <li>Routine Checkups & Well-Child Visits</li>
@@ -229,11 +261,11 @@
               <li>Growth & Developmental Assessments</li>
             </ul>
             <div class="mt-auto flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-6">
-              <a href="pediatrics.html"
+              <a href="#"
                 class="inline-flex items-center text-secondary-blue font-semibold hover:text-primary-indigo transition">
                 More Services <i class="fas fa-chevron-right ml-2 text-sm"></i>
               </a>
-              <a href="signup.html"
+              <a href="#"
                 class="inline-flex items-center text-secondary-blue font-semibold hover:text-primary-indigo transition">
                 Book an Appointment <i class="fas fa-calendar-check ml-2 text-sm"></i>
               </a>
@@ -247,7 +279,8 @@
               <i class="fas fa-vials"></i>
             </div>
             <h3 class="text-xl md:text-2xl font-bold text-primary-indigo mb-3">Diagnostic Services</h3>
-            <p class="text-gray-600 mb-4">Rapid and accurate laboratory and pathology services, utilizing advanced
+            <p class="text-gray-600 mb-4">Rapid and accurate laboratory and pathology services, utilizing
+              advanced
               technology for reliable diagnosis.</p>
             <ul class="list-disc list-inside text-gray-600 mb-6 space-y-1 pl-4 text-sm">
               <li>Comprehensive Blood & Tissue Analysis</li>
@@ -255,11 +288,11 @@
               <li>Home Sample Collection Facility</li>
             </ul>
             <div class="mt-auto flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-6">
-              <a href="diagnostics.html"
+              <a href="#"
                 class="inline-flex items-center text-secondary-blue font-semibold hover:text-primary-indigo transition">
                 More Services <i class="fas fa-chevron-right ml-2 text-sm"></i>
               </a>
-              <a href="signup.html"
+              <a href="#"
                 class="inline-flex items-center text-secondary-blue font-semibold hover:text-primary-indigo transition">
                 Book an Appointment <i class="fas fa-calendar-check ml-2 text-sm"></i>
               </a>
@@ -272,7 +305,8 @@
 
     <section id="services" class="py-16 md:py-24 bg-gray-100">
       <div class="max-w-7xl mx-auto px-4 md:px-8">
-        <h2 class="text-3xl md:text-4xl font-extrabold text-center text-primary-indigo mb-12 md:mb-16">Comprehensive
+        <h2 class="text-3xl md:text-4xl font-extrabold text-center text-primary-indigo mb-12 md:mb-16">
+          Comprehensive
           Medical Services</h2>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-8">
 
@@ -343,7 +377,8 @@
     </section>
     <section id="faq" class="py-16 md:py-24 bg-gray-50">
       <div class="max-w-5xl mx-auto px-4 md:px-8">
-        <h2 class="text-3xl md:text-4xl font-extrabold text-center text-primary-indigo mb-12 md:mb-16">Frequently Asked
+        <h2 class="text-3xl md:text-4xl font-extrabold text-center text-primary-indigo mb-12 md:mb-16">Frequently
+          Asked
           Questions</h2>
         <div class="space-y-4">
 
@@ -357,7 +392,8 @@
             </button>
             <div id="faq-content-1"
               class="faq-content px-4 md:px-5 pb-4 md:pb-5 hidden text-gray-700 border-t border-gray-100 bg-white text-sm md:text-base">
-              Our clinic is open from Monday to Friday, 8:00 AM to 6:00 PM, and on Saturdays and Sundays from 9:00 AM to
+              Our clinic is open from Monday to Friday, 8:00 AM to 6:00 PM, and on Saturdays and Sundays
+              from 9:00 AM to
               4:00 PM. We strive to accommodate appointments within these hours for your convenience.
             </div>
           </div>
@@ -372,8 +408,10 @@
             </button>
             <div id="faq-content-2"
               class="faq-content px-4 md:px-5 pb-4 md:pb-5 hidden text-gray-700 border-t border-gray-100 bg-white text-sm md:text-base">
-              Appointments can be easily scheduled through our secure online portal on the clinic website. If you
-              experience any difficulty booking online, please contact our administrative team via phone or email, and
+              Appointments can be easily scheduled through our secure online portal on the clinic website.
+              If you
+              experience any difficulty booking online, please contact our administrative team via phone or
+              email, and
               we will assist you promptly.
             </div>
           </div>
@@ -388,8 +426,10 @@
             </button>
             <div id="faq-content-3"
               class="faq-content px-4 md:px-5 pb-4 md:pb-5 hidden text-gray-700 border-t border-gray-100 bg-white text-sm md:text-base">
-              We offer comprehensive pediatric care, advanced diagnostic services, immunizations, child development
-              assessments, and telemedicine consultations. Our goal is to provide holistic and high-quality care
+              We offer comprehensive pediatric care, advanced diagnostic services, immunizations, child
+              development
+              assessments, and telemedicine consultations. Our goal is to provide holistic and high-quality
+              care
               tailored to each patient’s needs.
             </div>
           </div>
@@ -404,7 +444,8 @@
             </button>
             <div id="faq-content-4"
               class="faq-content px-4 md:px-5 pb-4 md:pb-5 hidden text-gray-700 border-t border-gray-100 bg-white text-sm md:text-base">
-              Yes, we provide telemedicine consultations for appropriate cases. This allows you to consult with our
+              Yes, we provide telemedicine consultations for appropriate cases. This allows you to consult
+              with our
               specialists remotely, ensuring convenient and timely care from the comfort of your home.
             </div>
           </div>
@@ -419,8 +460,10 @@
             </button>
             <div id="faq-content-5"
               class="faq-content px-4 md:px-5 pb-4 md:pb-5 hidden text-gray-700 border-t border-gray-100 bg-white text-sm md:text-base">
-              Yes, our clinic provides support for behavioral and developmental concerns in children. Our experienced
-              pediatric specialists and child development experts work closely with families to address these issues
+              Yes, our clinic provides support for behavioral and developmental concerns in children. Our
+              experienced
+              pediatric specialists and child development experts work closely with families to address
+              these issues
               with care and professionalism.
             </div>
           </div>
@@ -430,7 +473,8 @@
     </section>
     <section id="contact" class="py-16 md:py-24 bg-white">
       <div class="max-w-7xl mx-auto px-4 md:px-8">
-        <h2 class="text-3xl md:text-4xl font-extrabold text-center text-primary-indigo mb-12">Contact & Location</h2>
+        <h2 class="text-3xl md:text-4xl font-extrabold text-center text-primary-indigo mb-12">Contact & Location
+        </h2>
         <div class="grid sm:grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 text-gray-700 text-center">
           <div
             class="p-6 rounded-xl shadow-lg border-t-4 border-secondary-blue flex flex-col items-center text-sm md:text-base">
@@ -469,13 +513,13 @@
     </div>
   </footer>
 
-  <div class="fixed bottom-4 right-4 md:bottom-8 md:right-8 z-50">
-    <button id="chatbotBtn"
-      class="bg-primary-indigo hover:bg-secondary-blue text-white px-5 py-3 md:px-6 md:py-4 rounded-full font-semibold shadow-2xl transition-all duration-300 transform hover:scale-105 text-sm md:text-base">
+  <div class="fixed bottom-4 right-4 md:bottom-8 md:right-8 z-[99]">
+    <button id="chatbotBtn" onclick="toggleChatbot()"
+      class="bg-primary-indigo hover:bg-secondary-blue text-white px-5 py-3 md:px-6 md:py-4 rounded-full font-semibold shadow-2xl transition-all duration-300 transform hover:scale-105 text-sm md:text-base z-[100]">
       Chat with BlessBot
     </button>
     <div id="chatbot"
-      class="hidden w-80 md:w-96 bg-gray-900 rounded-2xl shadow-2xl mt-4 flex flex-col overflow-hidden fixed bottom-16 right-4 md:bottom-24 md:right-8">
+      class="hidden w-80 md:w-96 bg-gray-900 rounded-2xl shadow-2xl mt-4 flex flex-col overflow-hidden absolute right-0 bottom-16 md:bottom-24 z-[90]">
       <div class="flex justify-between items-center p-4 bg-primary-indigo border-b border-indigo-700 rounded-t-2xl">
         <h3 class="text-white font-semibold text-lg">BlessBot - Virtual Assistant</h3>
         <button class="text-white hover:text-gray-300 text-xl font-bold" onclick="toggleChatbot()"
@@ -485,8 +529,9 @@
       </div>
 
       <div id="chatMessages" class="p-4 flex-1 overflow-y-auto h-72 md:h-80 text-white space-y-3 bg-gray-800">
-        <div class="text-blue-300 bg-gray-700 p-3 rounded-xl rounded-tl-none inline-block max-w-[80%] text-sm">Hello!
-          I’m BlessBot. I can help with clinic info, doctors, services, and appointments.</div>
+        <div
+          class="text-blue-300 bg-gray-700 p-3 rounded-xl rounded-tl-none inline-block max-w-[80%] text-sm shadow-md">
+          Hello! I’m BlessBot. I can help with clinic info, doctors, services, and appointments.</div>
       </div>
 
       <div class="flex p-4 bg-gray-900 border-t border-gray-700 rounded-b-2xl">
@@ -501,6 +546,7 @@
       </div>
     </div>
   </div>
+   <script src="script.js"></script>
 </body>
 
 </html>
