@@ -1,12 +1,12 @@
 // ====================================================================
-// CRITICAL FIX: Define functions used inline in HTML (e.g., onclick="") 
-// on the global window object immediately, outside the DOMContentLoaded.
+// GLOBAL FUNCTIONS - Accessible immediately for inline HTML handlers
 // ====================================================================
 
 // Placeholder for DOMElements to be populated on DOMContentLoaded
 let DOMElements = {}; 
 let reviews = [];
 let autoSlideInterval;
+let currentSlide = 0; // Initialize slide tracker globally
 
 /** Scrolls smoothly to a target section by its ID, accounting for the fixed header. */
 window.scrollToSection = (id) => {
@@ -19,17 +19,16 @@ window.scrollToSection = (id) => {
             behavior: 'smooth'
         });
     }
-    // Close the mobile menu if it's open (Requires a temporary global menu toggle function)
+    // Close the mobile menu if it's open
     if (DOMElements.mobileMenu && DOMElements.mobileMenu.classList.contains('open')) {
-        // We call the internal toggle function after checking DOMElements
         DOMElements.mobileMenu.classList.remove('open');
-        // Manually reverse hamburger animation
-        DOMElements.span1.classList.remove('rotate-45', 'translate-y-1.5');
-        DOMElements.span2.classList.remove('opacity-0');
-        DOMElements.span3.classList.remove('-rotate-45', '-translate-y-1.5');
+        DOMElements.span1?.classList.remove('rotate-45', 'translate-y-1.5');
+        DOMElements.span2?.classList.remove('opacity-0');
+        DOMElements.span3?.classList.remove('-rotate-45', '-translate-y-1.5');
     }
 };
 
+/** Toggles the visibility of the chatbot window. */
 window.toggleChatbot = () => {
     if (!DOMElements.chatbot) return;
     DOMElements.chatbot.classList.toggle('hidden');
@@ -37,18 +36,20 @@ window.toggleChatbot = () => {
 
     const isOpen = !DOMElements.chatbot.classList.contains('hidden');
     if (isOpen) {
-        // Display initial greeting only on first open
-        if (DOMElements.chatMessages.children.length === 0) {
-            // Note: addMessage needs to be in the main DOMElements block to ensure access
-        }
+        // Focus the input when opened
         DOMElements.chatInput?.focus();
+        
+        // Add initial greeting only on first open
+        if (DOMElements.chatMessages && DOMElements.chatMessages.children.length === 0) {
+            // NOTE: The actual addMessage/response logic is defined inside DOMContentLoaded
+            // A simple placeholder or a proper definition inside DOMContentLoaded handles this.
+        }
     }
 };
 
-/** Sends the user's message and triggers a bot response. */
+/** Sends the user's message (defined fully inside DOMContentLoaded). */
 window.sendMessage = () => {
-    // This function will be defined properly inside DOMContentLoaded where bot logic resides
-    // The placeholder ensures the HTML doesn't crash if called too early
+    // This will be overridden inside DOMContentLoaded
 };
 
 /** Handles the Enter key press in the chat input. */
@@ -59,18 +60,20 @@ window.handleKeyPress = (e) => {
     }
 };
 
+/** Deletes a review by ID (defined fully inside DOMContentLoaded). */
 window.deleteReview = (id) => {
-    // This function will be properly defined inside DOMContentLoaded where reviews logic resides
-    // The placeholder ensures the HTML doesn't crash if called too early
+    // This will be overridden inside DOMContentLoaded
 };
+
 
 // ====================================================================
 // MAIN DOM CONTENT LOADED LOGIC 
+// All elements and internal functions are initialized here.
 // ====================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // Re-initialize DOMElements here to ensure all elements are found AFTER the DOM is ready
+    // -------------------- DOM & STATE INITIALIZATION --------------------
     DOMElements = {
         slides: document.querySelectorAll('.carousel-slide'),
         indicatorsContainer: document.getElementById('carouselIndicators'),
@@ -91,24 +94,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     reviews = JSON.parse(localStorage.getItem('blessingsClinicReviews')) || [];
 
-    // -------------------- MOBILE MENU LOGIC (Internal Toggle) --------------------
+    // -------------------- MOBILE MENU LOGIC --------------------
     const toggleMobileMenu = () => {
         if (!DOMElements.mobileMenu) return;
         const isMenuOpen = DOMElements.mobileMenu.classList.toggle('open');
 
-        // Hamburger animation simplified to use the Tailwind classes directly
-        DOMElements.span1.classList.toggle('rotate-45', isMenuOpen);
-        DOMElements.span1.classList.toggle('translate-y-1.5', isMenuOpen);
-        DOMElements.span2.classList.toggle('opacity-0', isMenuOpen);
-        DOMElements.span3.classList.toggle('-rotate-45', isMenuOpen);
-        DOMElements.span3.classList.toggle('-translate-y-1.5', isMenuOpen);
+        DOMElements.span1?.classList.toggle('rotate-45', isMenuOpen);
+        DOMElements.span1?.classList.toggle('translate-y-1.5', isMenuOpen);
+        DOMElements.span2?.classList.toggle('opacity-0', isMenuOpen);
+        DOMElements.span3?.classList.toggle('-rotate-45', isMenuOpen);
+        DOMElements.span3?.classList.toggle('-translate-y-1.5', isMenuOpen);
 
         DOMElements.mobileMenuBtn?.setAttribute('aria-expanded', isMenuOpen);
     };
 
     DOMElements.mobileMenuBtn?.addEventListener('click', toggleMobileMenu);
 
-    // Use event delegation for mobile links to trigger smooth scroll and close menu
     DOMElements.mobileNavLinks.forEach(link => {
         link.addEventListener('click', (event) => {
             event.preventDefault();
@@ -117,11 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-
     // -------------------- CAROUSEL LOGIC --------------------
-    // ... (Your Carousel Logic remains unchanged and works internally)
-
-    /** Updates the visibility of the current slide. */
     const showSlide = (index) => {
         DOMElements.slides.forEach((slide, i) => {
             slide.classList.toggle('active', i === index);
@@ -129,10 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentSlide = index;
         updateIndicators();
     };
-    
-    // ... (nextSlide, updateIndicators, startAutoSlide, stopAutoSlide, handleSwipeGesture)
-    
-    /** Moves to the next slide in the sequence. */
+
     const nextSlide = () => {
         const totalSlides = DOMElements.slides.length;
         if (totalSlides === 0) return;
@@ -140,7 +134,6 @@ document.addEventListener('DOMContentLoaded', () => {
         showSlide(currentSlide);
     };
 
-    /** Re-renders the carousel navigation dots. */
     const updateIndicators = () => {
         if (!DOMElements.indicatorsContainer) return;
         DOMElements.indicatorsContainer.innerHTML = '';
@@ -151,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
             dot.classList.toggle('bg-white', i !== currentSlide); 
             dot.addEventListener('click', () => {
                 showSlide(i);
-                startAutoSlide(); // Reset timer on manual interaction
+                startAutoSlide();
             });
             DOMElements.indicatorsContainer.appendChild(dot);
         });
@@ -166,11 +159,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const stopAutoSlide = () => {
         if (autoSlideInterval) clearInterval(autoSlideInterval);
     };
-    
+
+    // Initialize Carousel
+    if (DOMElements.slides.length > 0) {
+        showSlide(currentSlide);
+        startAutoSlide();
+    }
+
     // Carousel Swipe Support
     let touchStartX = 0;
     let touchEndX = 0;
-    
+
     DOMElements.slides.forEach(slide => {
         slide.addEventListener('touchstart', e => {
             touchStartX = e.changedTouches[0].screenX;
@@ -181,30 +180,23 @@ document.addEventListener('DOMContentLoaded', () => {
             handleSwipeGesture();
         });
     });
-    
+
     const handleSwipeGesture = () => {
         const swipeDistance = touchEndX - touchStartX;
         const minSwipeDistance = 50;
         const totalSlides = DOMElements.slides.length;
-    
-        if (swipeDistance > minSwipeDistance) { // Swipe Right (Previous)
+
+        if (swipeDistance > minSwipeDistance) {
             currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
             showSlide(currentSlide);
-        } else if (swipeDistance < -minSwipeDistance) { // Swipe Left (Next)
+        } else if (swipeDistance < -minSwipeDistance) {
             nextSlide();
         }
-        startAutoSlide(); // Restart auto-slide
-    };
-    
-    // Initialize Carousel
-    if (DOMElements.slides.length > 0) {
-        showSlide(currentSlide);
         startAutoSlide();
-    }
+    };
 
 
     // -------------------- FAQ ACCORDION LOGIC --------------------
-    // ... (Your FAQ Logic remains unchanged)
     const initFAQ = () => {
         DOMElements.faqButtons.forEach(btn => {
             const content = btn.nextElementSibling;
@@ -212,7 +204,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const plusIcon = iconContainer?.querySelector(".fa-plus");
             const minusIcon = iconContainer?.querySelector(".fa-minus");
 
-            // Initial state setup
             const isInitiallyExpanded = btn.getAttribute('aria-expanded') === 'true';
             content.classList.toggle('hidden', !isInitiallyExpanded);
             plusIcon?.classList.toggle('hidden', isInitiallyExpanded);
@@ -221,7 +212,6 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.addEventListener("click", () => {
                 const isExpanded = btn.getAttribute('aria-expanded') === 'true';
 
-                // Close all other open FAQs
                 DOMElements.faqButtons.forEach(otherBtn => {
                     if (otherBtn !== btn && otherBtn.getAttribute('aria-expanded') === 'true') {
                         const otherContent = otherBtn.nextElementSibling;
@@ -234,7 +224,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
 
-                // Toggle the clicked FAQ
                 btn.setAttribute('aria-expanded', String(!isExpanded));
                 content.classList.toggle("hidden");
                 plusIcon?.classList.toggle('hidden');
@@ -242,10 +231,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     };
-    initFAQ(); // Run initialization
+    initFAQ();
 
-
-    // -------------------- REVIEW SYSTEM LOGIC --------------------
+    // -------------------- REVIEW SYSTEM LOGIC (FIXED) --------------------
 
     const saveReviews = () => {
         localStorage.setItem('blessingsClinicReviews', JSON.stringify(reviews));
@@ -263,9 +251,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         container.classList.add('flex', 'gap-6', 'py-4', 'overflow-x-auto', 'snap-x', 'snap-mandatory', 'justify-start');
         container.innerHTML = reviews.map(r => {
+            
+            // --- FIX: Using fas for solid and far for regular (empty) stars ---
             const stars = Array(5).fill(0).map((_, i) => i < r.rating ?
                 '<i class="fas fa-star text-yellow-500"></i>' :
-                '<i class="far fa-star text-yellow-500"></i>' // Corrected to use fas and far for filled/empty stars
+                '<i class="far fa-star text-yellow-500"></i>'
             ).join('');
 
             return `
@@ -283,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join('');
     };
 
-    // Override the global placeholder function
+    // Override global placeholder
     window.deleteReview = (id) => {
         reviews = reviews.filter(r => r.id !== id);
         saveReviews();
@@ -296,9 +286,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const formData = new FormData(form);
         const name = formData.get('reviewerName').trim() || 'Anonymous Patient';
         const text = formData.get('reviewText').trim();
+        const rating = parseInt(formData.get('rating'));
 
-        if (!text) {
-            alert('Please enter your feedback.');
+        if (!text || !rating) {
+            alert('Please enter your feedback and select a star rating.');
             return;
         }
 
@@ -306,11 +297,11 @@ document.addEventListener('DOMContentLoaded', () => {
             id: Date.now(),
             name,
             text,
-            rating: parseInt(formData.get('rating')),
+            rating,
             date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
         };
 
-        reviews.unshift(review); // Add new review to the start
+        reviews.unshift(review);
         saveReviews();
         displayReviews();
         form.reset();
@@ -318,12 +309,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     DOMElements.reviewForm?.addEventListener('submit', submitReview);
-    displayReviews(); // Initial display
-
+    displayReviews(); // Initial display of reviews
 
     // -------------------- CHATBOT CORE LOGIC --------------------
-    
-    // Bot responses and utility functions remain unchanged inside DOMContentLoaded
+
     const botResponses = {
         greetings: { positive: ["Hello! I'm BlessBot, happy to help you with Blessings Clinic information today. How can I assist?", "Hi there! What can I do for you?"], neutral: ["Hello! Welcome to Blessings Child Care And Diagnostics. I'm BlessBot. How can I assist you today?", "Hi there! I can share details about our clinic, our doctors, services, and how to book appointments."] },
         about: ["Blessings Child Care And Diagnostics is a specialized clinic focused on **pediatric care** and **advanced diagnostics**. We provide essential services like checkups, vaccinations, and laboratory testing.", "Our mission is to provide compassionate, high-quality care for infants, children, and adolescents, supported by state-of-the-art diagnostic facilities."],
@@ -428,7 +417,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (charIndex >= line.length) {
                     clearInterval(lineInterval);
                     lineIndex++;
-                    setTimeout(typeLine, 100); // Small pause between lines
+                    setTimeout(typeLine, 100);
                 }
             }, delay);
         }
@@ -451,19 +440,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Bot message
         if (!isTyping) {
-            // Direct message (e.g., initial greeting)
             const messageDiv = document.createElement('div');
             messageDiv.classList.add('flex', 'mb-3', 'justify-start', 'animate-fade-in');
-            messageDiv.innerHTML = `<div class="bg-gray-700 text-blue-300 p-3 rounded-xl rounded-tl-none max-w-[80%] shadow-md whitespace-pre-wrap">${content}</div>`;
+            messageDiv.innerHTML = `<div class="bg-primary-indigo text-white p-3 rounded-xl rounded-tl-none max-w-[80%] shadow-md whitespace-pre-wrap">${content}</div>`;
             DOMElements.chatMessages.appendChild(messageDiv);
         } else {
-            // Message with typing animation
             const typingIndicator = addTypingIndicator();
             const response = content;
             const typingDelay = 500 + Math.min(response.length * 15, 1200);
 
             setTimeout(() => {
-                typingIndicator.remove(); // Remove the typing dots
+                typingIndicator.remove();
                 
                 const messageDiv = document.createElement('div');
                 messageDiv.classList.add('flex', 'mb-3', 'justify-start');
@@ -481,10 +468,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
 
-    // Override the global placeholder function
+    // --- FIX: OVERRIDE global placeholder with the fully defined, working logic ---
     window.sendMessage = () => {
         if (!DOMElements.chatInput) return;
         const message = DOMElements.chatInput.value.trim();
+        
+        // Prevent sending empty messages
         if (!message) return;
 
         addMessage(message, 'user', false);
@@ -493,15 +482,10 @@ document.addEventListener('DOMContentLoaded', () => {
         addMessage(response, 'bot', true);
     };
     
-    // Initial greeting if chatbot is opened via the global placeholder
-    if (DOMElements.chatbotBtn) {
-         DOMElements.chatbotBtn.addEventListener('click', () => {
-             // This is handled by the global window.toggleChatbot now, 
-             // but we ensure the greeting fires when the chat window is initially opened.
-             if (!DOMElements.chatbot.classList.contains('hidden') && DOMElements.chatMessages.children.length === 0) {
-                 addMessage(getRandomResponse(botResponses.greetings.neutral), 'bot', false);
-             }
-         });
+    // Initial greeting if chatbot is opened (only show if no messages exist)
+    if (DOMElements.chatbot && DOMElements.chatMessages) {
+         if (!DOMElements.chatbot.classList.contains('hidden') && DOMElements.chatMessages.children.length === 0) {
+             addMessage(getRandomResponse(botResponses.greetings.neutral), 'bot', false);
+         }
     }
-
 });
