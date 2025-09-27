@@ -3,23 +3,79 @@ const slides = document.querySelectorAll('.carousel-slide');
 const totalSlides = slides.length;
 let chatbotOpen = false;
 
+// DOM Elements
 const chatMessages = document.getElementById('chatMessages');
 const chatInput = document.getElementById('chatInput');
 const chatbot = document.getElementById('chatbot');
 const chatbotBtn = document.getElementById('chatbotBtn');
 const indicators = document.getElementById('carouselIndicators');
 
-// -------------------- CAROUSEL (UNCHANGED) --------------------
+const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+const mobileMenu = document.getElementById('mobileMenu');
+
+
+// -------------------- UTILITY FUNCTIONS --------------------
+
+// Helper function for smooth scrolling from buttons, accounting for fixed header
+function scrollToSection(id) {
+    const section = document.getElementById(id);
+    if (section) {
+        // Adjust scroll to account for fixed header (nav height is approx 80px)
+        const yOffset = -80;
+        const y = section.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+    // Close mobile menu if it's open
+    if (mobileMenu && mobileMenu.classList.contains('open')) {
+        toggleMobileMenu();
+    }
+}
+
+// Global exposure for HTML onclick attributes
+window.scrollToSection = scrollToSection;
+
+
+// -------------------- MOBILE MENU LOGIC --------------------
+
+function toggleMobileMenu() {
+    if (!mobileMenu || !mobileMenuBtn) return;
+
+    const isMenuOpen = mobileMenu.classList.toggle('open');
+
+    // Hamburger icon animation
+    const span1 = document.getElementById('span1');
+    const span2 = document.getElementById('span2');
+    const span3 = document.getElementById('span3');
+
+    span1.classList.toggle('rotate-45', isMenuOpen);
+    span1.classList.toggle('translate-y-[5px]', isMenuOpen);
+    span2.classList.toggle('opacity-0', isMenuOpen);
+    span3.classList.toggle('-rotate-45', isMenuOpen);
+    span3.classList.toggle('-translate-y-[5px]', isMenuOpen);
+
+    mobileMenuBtn.setAttribute('aria-expanded', isMenuOpen);
+}
+
+// Event listener for mobile menu button
+if (mobileMenuBtn) {
+    mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+}
+// Event listeners for mobile navigation links (to close menu after click)
+document.querySelectorAll('.mobile-nav-link').forEach(link => {
+    link.addEventListener('click', toggleMobileMenu);
+});
+
+
+// -------------------- CAROUSEL LOGIC --------------------
 function showSlide(index) {
     slides.forEach((slide, i) => {
-        // Toggle the 'active' class to control visibility, opacity, and z-index
-        // as defined in the <style> block of the HTML file.
-        if(i === index){
+        if (i === index) {
             slide.classList.add('active');
         } else {
             slide.classList.remove('active');
         }
     });
+    currentSlide = index; // Update currentSlide here to match the index shown
     updateIndicators();
 }
 
@@ -29,41 +85,33 @@ function nextSlide() {
 }
 
 function updateIndicators() {
-    if(!indicators) return;
+    if (!indicators) return;
     indicators.innerHTML = '';
     slides.forEach((_, i) => {
         const dot = document.createElement('span');
-        dot.classList.add('w-3','h-3','rounded-full','cursor-pointer','transition-colors','duration-300');
-        if(i === currentSlide){
-            // Use the custom color variable name for consistency
-            dot.classList.add('bg-secondary-blue');
+        dot.classList.add('w-3', 'h-3', 'rounded-full', 'cursor-pointer', 'transition-colors', 'duration-300');
+        if (i === currentSlide) {
+            // Use a color that is clearly visible/active
+            dot.classList.add('bg-primary-indigo'); 
         } else {
             dot.classList.add('bg-gray-400');
         }
         dot.addEventListener('click', () => {
-            currentSlide = i;
-            showSlide(currentSlide);
+            showSlide(i);
         });
         indicators.appendChild(dot);
     });
 }
 
-// Helper function for smooth scrolling from buttons
-function scrollToSection(id) {
-    const section = document.getElementById(id);
-    if (section) {
-        section.scrollIntoView({ behavior: 'smooth' });
-    }
-}
-
 // Initialize Carousel
 if (slides.length > 0) {
     showSlide(currentSlide);
+    // Auto-advance every 5 seconds
     setInterval(nextSlide, 5000);
 }
 
 
-// -------------------- BOT RESPONSES (UPDATED) --------------------
+// -------------------- BOT RESPONSES --------------------
 const botResponses = {
     greetings: {
         positive: [
@@ -88,12 +136,10 @@ const botResponses = {
     contact: [
         "You can reach us directly:\n- **Phone (Appointments):** (555) 123-4567\n- **Email (General Inquiries):** info@blessingsmedical.com"
     ],
-    // Only one doctor listed
     doctors: [
         "Our Chief Pediatrician is **Dr. Deepika Gulati Dumeer**.",
         "We are led by Dr. Deepika Gulati Dumeer, a specialist in Pediatric Medicine."
     ],
-    // Only Dr. Deepika's details remain
     doctorDetails: {
         "deepika": "Dr. Deepika Gulati Dumeer is our **Chief Pediatrician**. She specializes in Pediatric Medicine and Neonatology, with 15+ years of experience. Education: Harvard Medical School, Johns Hopkins Residency.",
     },
@@ -101,7 +147,7 @@ const botResponses = {
         "Our core services include:\n1. **Routine Checkups**\n2. **Vaccinations/Immunizations**\n3. **Specialized Consultations**\n4. **Laboratory Tests (Blood, Tissue)**\n\nWhich service interests you the most?"
     ],
     appointment: [
-        "To book an appointment, please visit our **Pediatrics** page and look for the 'Book an Appointment' section, or call us directly at (555) 123-4567.",
+        "To book an appointment, please visit our **Contact & Book** section, or call us directly at (555) 123-4567.",
         "You can schedule easily online by signing up or logging into your patient account on our website."
     ],
     thanks: [
@@ -113,12 +159,10 @@ const botResponses = {
         "That information might be outside my current knowledge base. For complex inquiries, please call the clinic directly."
     ],
     error: [
-        "I can only provide details on our Chief Pediatrician, Dr. Deepika Gulati Dumeer. Please ask about her!",
+        "I can only provide details on our Chief Pediatrician, **Dr. Deepika Gulati Dumeer**. Please ask about her!",
         "Could you please clarify? I only have information for Dr. Deepika."
     ]
 };
-
-// -------------------- CHATBOT LOGIC (UPDATED) --------------------
 
 // Simple sentiment detection based on keywords
 function getSentiment(msg) {
@@ -127,6 +171,10 @@ function getSentiment(msg) {
         return 'positive';
     }
     return 'neutral';
+}
+
+function getRandomResponse(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
 }
 
 function getBotResponse(message) {
@@ -140,29 +188,25 @@ function getBotResponse(message) {
 
     // --- 2. Doctor Details Check (Specific intent) ---
     const doctorMatch = msg.match(/(deepika|dr\. deepika|pediatrician|dr\. nitin|nitin|pathologist)/);
-    
+
     if (doctorMatch) {
         const key = doctorMatch[1];
-        
-        // If they ask specifically about Dr. Deepika, give details
         if (key.includes('deepika') || key.includes('pediatrician')) {
             return botResponses.doctorDetails.deepika;
         }
-        
-        // If they ask about Dr. Nitin or Pathologist, give the limited error/clarification
         if (key.includes('nitin') || key.includes('pathologist')) {
             return getRandomResponse(botResponses.error);
         }
     }
-    
+
     // --- 3. General Synonyms & Intent Mapping ---
     const synonyms = {
-        about: ["about", "clinic", "information", "details", "who are you", "what is blessings", "mission"],
+        about: ["about", "clinic", "information", "details", "what is blessings", "mission"],
         timing: ["time", "timing", "hours", "open", "schedule", "working"],
         location: ["location", "address", "where", "find", "place", "map"],
         contact: ["contact", "phone", "email", "reach", "number", "call"],
-        doctors: ["doctor", "physician", "specialist"], // Keep this general, specific names are handled above
-        services: ["service", "treatment", "care", "facility", "test", "lab", "checkup", "cost", "price"],
+        doctors: ["doctor", "physician", "specialist"], 
+        services: ["service", "treatment", "care", "facility", "test", "lab", "checkup"],
         appointment: ["appointment", "book", "schedule visit", "reservation", "consultation"],
         thanks: ["thank", "thanks", "thank you"],
         goodbye: ["bye", "see you", "goodbye", "exit"]
@@ -177,75 +221,30 @@ function getBotResponse(message) {
     return getRandomResponse(botResponses.default);
 }
 
-function getRandomResponse(arr) {
-    return arr[Math.floor(Math.random() * arr.length)];
-}
 
-// -------------------- CHATBOT UI (IMPROVED) --------------------
+// -------------------- CHATBOT UI & FUNCTIONALITY --------------------
+
+// Global exposure for HTML onclick attributes
+window.toggleChatbot = toggleChatbot;
+
 function toggleChatbot() {
+    if (!chatbot) return;
     chatbotOpen = !chatbotOpen;
     if (chatbotOpen) {
         chatbot.classList.remove('hidden');
         chatbot.classList.add('animate-fade-in');
-        // Initial greeting on open
+        // Initial greeting on open (if no messages)
         if (chatMessages.children.length === 0) {
              addMessage(getRandomResponse(botResponses.greetings.neutral), 'bot', false);
         }
+        if (chatInput) chatInput.focus();
     } else {
         chatbot.classList.add('hidden');
         chatbot.classList.remove('animate-fade-in');
     }
 }
 
-function addMessage(content, sender, isTyping = true) {
-    const messageDiv = document.createElement('div');
-    messageDiv.classList.add('flex', 'mb-3');
-    
-    if (sender === 'user') {
-        messageDiv.classList.add('justify-end');
-        messageDiv.innerHTML = `<div class="bg-secondary-blue text-white p-3 rounded-xl rounded-br-none max-w-[80%] shadow-md">${content}</div>`;
-        chatMessages.appendChild(messageDiv);
-    } else {
-        messageDiv.classList.add('justify-start');
-        // If not typing, just show the message immediately (used for initial greeting)
-        if (!isTyping) {
-            messageDiv.innerHTML = `<div class="bg-primary-indigo text-white p-3 rounded-xl rounded-tl-none max-w-[80%] shadow-md whitespace-pre-wrap">${content}</div>`;
-            chatMessages.appendChild(messageDiv);
-        } else {
-             // Create a container for the typing animation
-            messageDiv.classList.add('typing-container');
-            chatMessages.appendChild(messageDiv);
-            
-            // Add typing animation
-            const typingAnimation = addTyping(messageDiv);
-
-            // Calculate realistic delay based on message length (15ms per character + base delay)
-            const typingDelay = 500 + Math.min(content.length * 15, 1200);
-
-            setTimeout(() => {
-                // Remove typing animation
-                typingAnimation.remove();
-                
-                // Add the final response container
-                const responseDiv = document.createElement('div');
-                responseDiv.classList.add('bg-primary-indigo', 'text-white', 'p-3', 'rounded-xl', 'rounded-tl-none', 'max-w-[80%]', 'shadow-md', 'whitespace-pre-wrap');
-                
-                // Use the typeMessage function for the typing effect
-                messageDiv.appendChild(responseDiv);
-                typeMessage(responseDiv, content);
-                
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }, typingDelay);
-        }
-    }
-
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
 function addTyping(parentDiv) {
-    const typingSpan = document.createElement('span');
-    typingSpan.classList.add('dot', 'inline-block', 'w-2', 'h-2', 'bg-white', 'rounded-full', 'mx-0.5', 'animate-bounce');
-    
     const typingDiv = document.createElement('div');
     typingDiv.classList.add('bg-gray-700', 'p-3', 'rounded-xl', 'rounded-tl-none', 'inline-block', 'shadow-md');
     typingDiv.innerHTML = `
@@ -257,19 +256,17 @@ function addTyping(parentDiv) {
     return typingDiv;
 }
 
-
-// Function to simulate typing out the message content
 function typeMessage(element, text, delay = 15) {
     const lines = text.split('\n');
     element.innerHTML = '';
-    
+
     function typeLine(lineIndex) {
         if (lineIndex >= lines.length) return;
 
         let line = lines[lineIndex];
         let j = 0;
-        
-        if (lineIndex > 0) element.innerHTML += '<br>'; // Add a newline marker
+
+        if (lineIndex > 0) element.innerHTML += '<br>';
 
         const span = document.createElement('span');
         element.appendChild(span);
@@ -279,36 +276,76 @@ function typeMessage(element, text, delay = 15) {
             j++;
             if (j >= line.length) {
                 clearInterval(lineInterval);
-                typeLine(lineIndex + 1); // Move to the next line
+                // Introduce a slight pause before typing the next line (if any)
+                setTimeout(() => typeLine(lineIndex + 1), 100);
             }
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }, delay);
     }
-    
+
     typeLine(0);
 }
 
+function addMessage(content, sender, isTyping = true) {
+    if (!chatMessages) return;
+    const messageDiv = document.createElement('div');
+    messageDiv.classList.add('flex', 'mb-3');
+
+    if (sender === 'user') {
+        messageDiv.classList.add('justify-end', 'animate-fade-in');
+        messageDiv.innerHTML = `<div class="bg-secondary-blue text-white p-3 rounded-xl rounded-br-none max-w-[80%] shadow-md">${content}</div>`;
+        chatMessages.appendChild(messageDiv);
+    } else {
+        messageDiv.classList.add('justify-start');
+
+        if (!isTyping) {
+            // Used for initial instant greeting
+            messageDiv.innerHTML = `<div class="bg-primary-indigo text-white p-3 rounded-xl rounded-tl-none max-w-[80%] shadow-md whitespace-pre-wrap animate-fade-in">${content}</div>`;
+            chatMessages.appendChild(messageDiv);
+        } else {
+            // Typing simulation logic
+            chatMessages.appendChild(messageDiv);
+            const typingAnimation = addTyping(messageDiv);
+
+            // Realistic delay (500ms base + 15ms per character)
+            const typingDelay = 500 + Math.min(content.length * 15, 1200);
+
+            setTimeout(() => {
+                typingAnimation.remove();
+                const responseDiv = document.createElement('div');
+                responseDiv.classList.add('bg-primary-indigo', 'text-white', 'p-3', 'rounded-xl', 'rounded-tl-none', 'max-w-[80%]', 'shadow-md', 'whitespace-pre-wrap');
+                messageDiv.appendChild(responseDiv);
+                typeMessage(responseDiv, content);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, typingDelay);
+        }
+    }
+    chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to bottom after adding
+}
 
 function sendMessage() {
+    if (!chatInput) return;
     const message = chatInput.value.trim();
     if (!message) return;
-    addMessage(message, 'user', false); // User message is instant
+
+    addMessage(message, 'user', false);
     chatInput.value = '';
 
     const response = getBotResponse(message);
-    addMessage(response, 'bot', true); // Bot message triggers typing simulation
+    addMessage(response, 'bot', true);
 }
 
+// Global exposure for HTML onclick attributes
+window.sendMessage = sendMessage;
+window.handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        sendMessage();
+    }
+};
 
-if (chatbotBtn) chatbotBtn.addEventListener('click', toggleChatbot);
-chatInput.addEventListener('keydown', e => { 
-    if (e.key === 'Enter') { 
-        e.preventDefault(); 
-        sendMessage(); 
-    } 
-});
 
-// -------------------- REVIEWS SYSTEM (UNCHANGED) --------------------
+// -------------------- REVIEWS SYSTEM --------------------
 let reviews = [];
 
 function loadReviews() {
@@ -327,13 +364,11 @@ function displayReviews() {
 
     if (reviews.length === 0) {
         container.innerHTML = '<p class="text-gray-500 italic p-4">No reviews to display yet.</p>';
-        // Ensure styling is correctly applied for empty state
-        container.classList.remove('flex', 'gap-6', 'py-4', 'overflow-x-auto', 'snap-x', 'snap-mandatory');
+        container.classList.remove('flex', 'gap-6', 'py-4', 'overflow-x-auto', 'snap-x', 'snap-mandatory', 'justify-start');
         return;
     }
 
-    // Apply horizontal scroll styling when reviews exist
-    container.classList.add('flex', 'gap-6', 'py-4', 'overflow-x-auto', 'snap-x', 'snap-mandatory');
+    container.classList.add('flex', 'gap-6', 'py-4', 'overflow-x-auto', 'snap-x', 'snap-mandatory', 'justify-start');
 
     container.innerHTML = reviews.map(r => {
         const stars = r.rating ? Array(5).fill(0).map((_, i) => i < r.rating ? '★' : '☆').join('') : '';
@@ -355,15 +390,14 @@ function submitReview(event) {
     event.preventDefault();
     const form = event.target;
     const formData = new FormData(form);
-    
-    // Simple validation
-    const name = formData.get('reviewerName').trim();
+
+    const name = formData.get('reviewerName').trim() || 'Anonymous Patient';
     const text = formData.get('reviewText').trim();
-    if (!name || !text) {
-        alert('Please enter your name and feedback.');
+    if (!text) {
+        alert('Please enter your feedback.');
         return;
     }
-    
+
     const review = {
         id: Date.now(),
         name: name,
@@ -371,7 +405,7 @@ function submitReview(event) {
         rating: parseInt(formData.get('rating')),
         date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
     };
-    
+
     reviews.unshift(review);
     saveReviews();
     displayReviews();
@@ -379,69 +413,69 @@ function submitReview(event) {
 }
 
 function deleteReview(id) {
+    // Expose deleteReview globally for the onclick in displayReviews
     reviews = reviews.filter(r => r.id !== id);
     saveReviews();
     displayReviews();
 }
+window.deleteReview = deleteReview; // Expose globally
 
-// -------------------- FAQ TOGGLE (UNCHANGED) --------------------
+
+// -------------------- FAQ TOGGLE (Accordion) --------------------
 function initFAQ() {
     const faqButtons = document.querySelectorAll(".faq-btn");
     faqButtons.forEach(btn => {
-        // Find the icon element within the button
+        const content = btn.nextElementSibling;
         const iconContainer = btn.querySelector(".faq-icon");
-        // Check for Font Awesome icons or similar placeholders
         const plusIcon = iconContainer ? iconContainer.querySelector(".fa-plus") : null;
         const minusIcon = iconContainer ? iconContainer.querySelector(".fa-minus") : null;
 
-        if (plusIcon && minusIcon) {
-            // Set initial icon state
-            if (btn.getAttribute('aria-expanded') === 'true') {
-                plusIcon.classList.add('hidden');
-                minusIcon.classList.remove('hidden');
-            } else {
-                plusIcon.classList.remove('hidden');
-                minusIcon.classList.add('hidden');
-            }
+        const isInitiallyExpanded = btn.getAttribute('aria-expanded') === 'true';
+
+        // Set initial state
+        if (isInitiallyExpanded) {
+            content.classList.remove('hidden');
+            plusIcon?.classList.add('hidden');
+            minusIcon?.classList.remove('hidden');
+        } else {
+            content.classList.add('hidden');
+            plusIcon?.classList.remove('hidden');
+            minusIcon?.classList.add('hidden');
         }
 
-
         btn.addEventListener("click", () => {
-            const content = btn.nextElementSibling;
             const isExpanded = btn.getAttribute('aria-expanded') === 'true';
 
-            // Toggle ARIA attribute
-            btn.setAttribute('aria-expanded', String(!isExpanded));
-            
-            // Toggle visibility of content
-            content.classList.toggle("hidden");
+            // Close all other open FAQs
+            document.querySelectorAll(".faq-btn").forEach(otherBtn => {
+                if (otherBtn !== btn && otherBtn.getAttribute('aria-expanded') === 'true') {
+                    const otherContent = otherBtn.nextElementSibling;
+                    const otherPlusIcon = otherBtn.querySelector(".fa-plus");
+                    const otherMinusIcon = otherBtn.querySelector(".fa-minus");
 
-            // Toggle icons if they exist
-            if (plusIcon && minusIcon) {
-                plusIcon.classList.toggle('hidden');
-                minusIcon.classList.toggle('hidden');
-            }
+                    otherBtn.setAttribute('aria-expanded', 'false');
+                    otherContent.classList.add("hidden");
+                    otherPlusIcon?.classList.remove('hidden');
+                    otherMinusIcon?.classList.add('hidden');
+                }
+            });
+
+            // Toggle current FAQ
+            btn.setAttribute('aria-expanded', String(!isExpanded));
+            content.classList.toggle("hidden");
+            plusIcon?.classList.toggle('hidden');
+            minusIcon?.classList.toggle('hidden');
         });
     });
 }
 
-// -------------------- INITIALIZATION (IMPROVED) --------------------
-window.addEventListener('load', () => {
-    // Check if the global function is defined (due to inline onclick on buttons)
-    window.scrollToSection = (id) => {
-        const section = document.getElementById(id);
-        if (section) {
-            // Adjust scroll to account for fixed header (nav height is approx 80px)
-            const yOffset = -80; 
-            const y = section.getBoundingClientRect().top + window.pageYOffset + yOffset;
-            window.scrollTo({ top: y, behavior: 'smooth' });
-        }
-    };
-    
+
+// -------------------- INITIALIZATION --------------------
+document.addEventListener('DOMContentLoaded', () => {
     // Initialize Systems
     loadReviews();
     initFAQ();
 
-    // Event listener for the Review Form (must be after loadReviews)
+    // Attach Event listener for the Review Form
     document.getElementById('reviewForm')?.addEventListener('submit', submitReview);
 });
