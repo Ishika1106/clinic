@@ -1,481 +1,468 @@
-let currentSlide = 0;
-const slides = document.querySelectorAll('.carousel-slide');
-const totalSlides = slides.length;
-let chatbotOpen = false;
+document.addEventListener('DOMContentLoaded', () => {
 
-// DOM Elements
-const chatMessages = document.getElementById('chatMessages');
-const chatInput = document.getElementById('chatInput');
-const chatbot = document.getElementById('chatbot');
-const chatbotBtn = document.getElementById('chatbotBtn');
-const indicators = document.getElementById('carouselIndicators');
-
-const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-const mobileMenu = document.getElementById('mobileMenu');
-
-
-// -------------------- UTILITY FUNCTIONS --------------------
-
-// Helper function for smooth scrolling from buttons, accounting for fixed header
-function scrollToSection(id) {
-    const section = document.getElementById(id);
-    if (section) {
-        // Adjust scroll to account for fixed header (nav height is approx 80px)
-        const yOffset = -80;
-        const y = section.getBoundingClientRect().top + window.pageYOffset + yOffset;
-        window.scrollTo({ top: y, behavior: 'smooth' });
-    }
-    // Close mobile menu if it's open
-    if (mobileMenu && mobileMenu.classList.contains('open')) {
-        toggleMobileMenu();
-    }
-}
-
-// Global exposure for HTML onclick attributes
-window.scrollToSection = scrollToSection;
-
-
-// -------------------- MOBILE MENU LOGIC --------------------
-
-function toggleMobileMenu() {
-    if (!mobileMenu || !mobileMenuBtn) return;
-
-    const isMenuOpen = mobileMenu.classList.toggle('open');
-
-    // Hamburger icon animation
-    const span1 = document.getElementById('span1');
-    const span2 = document.getElementById('span2');
-    const span3 = document.getElementById('span3');
-
-    span1.classList.toggle('rotate-45', isMenuOpen);
-    span1.classList.toggle('translate-y-[5px]', isMenuOpen);
-    span2.classList.toggle('opacity-0', isMenuOpen);
-    span3.classList.toggle('-rotate-45', isMenuOpen);
-    span3.classList.toggle('-translate-y-[5px]', isMenuOpen);
-
-    mobileMenuBtn.setAttribute('aria-expanded', isMenuOpen);
-}
-
-// Event listener for mobile menu button
-if (mobileMenuBtn) {
-    mobileMenuBtn.addEventListener('click', toggleMobileMenu);
-}
-// Event listeners for mobile navigation links (to close menu after click)
-document.querySelectorAll('.mobile-nav-link').forEach(link => {
-    link.addEventListener('click', toggleMobileMenu);
-});
-
-
-// -------------------- CAROUSEL LOGIC --------------------
-function showSlide(index) {
-    slides.forEach((slide, i) => {
-        if (i === index) {
-            slide.classList.add('active');
-        } else {
-            slide.classList.remove('active');
-        }
-    });
-    currentSlide = index; // Update currentSlide here to match the index shown
-    updateIndicators();
-}
-
-function nextSlide() {
-    currentSlide = (currentSlide + 1) % slides.length;
-    showSlide(currentSlide);
-}
-
-function updateIndicators() {
-    if (!indicators) return;
-    indicators.innerHTML = '';
-    slides.forEach((_, i) => {
-        const dot = document.createElement('span');
-        dot.classList.add('w-3', 'h-3', 'rounded-full', 'cursor-pointer', 'transition-colors', 'duration-300');
-        if (i === currentSlide) {
-            // Use a color that is clearly visible/active
-            dot.classList.add('bg-primary-indigo'); 
-        } else {
-            dot.classList.add('bg-gray-400');
-        }
-        dot.addEventListener('click', () => {
-            showSlide(i);
-        });
-        indicators.appendChild(dot);
-    });
-}
-
-// Initialize Carousel
-if (slides.length > 0) {
-    showSlide(currentSlide);
-    // Auto-advance every 5 seconds
-    setInterval(nextSlide, 5000);
-}
-
-
-// -------------------- BOT RESPONSES --------------------
-const botResponses = {
-    greetings: {
-        positive: [
-            "Hello! I'm BlessBot, happy to help you with Blessings Clinic information today. How can I assist?",
-            "Hi there! What can I do for you?"
-        ],
-        neutral: [
-            "Hello! Welcome to Blessings Child Care And Diagnostics. I'm BlessBot. How can I assist you today?",
-            "Hi there! I can share details about our clinic, our doctor, services, and how to book appointments."
-        ]
-    },
-    about: [
-        "Blessings Child Care And Diagnostics is a specialized clinic focused on **pediatric care** and **advanced diagnostics**. We provide essential services like checkups, vaccinations, and laboratory testing.",
-        "Our mission is to provide compassionate, high-quality care for infants, children, and adolescents, supported by state-of-the-art diagnostic facilities."
-    ],
-    timing: [
-        "Our clinic hours are:\n- **Monday to Friday:** 8:00 AM – 6:00 PM\n- **Saturday:** 9:00 AM – 4:00 PM\n- **Sunday:** Closed\n(Please note: Diagnostic services may have slightly different hours.)"
-    ],
-    location: [
-        "We are located at:\n**123 Medical Center Drive, Healthcare City, HC 12345**\n\nIf you're looking for directions, please search Blessings Clinic on Google Maps."
-    ],
-    contact: [
-        "You can reach us directly:\n- **Phone (Appointments):** (555) 123-4567\n- **Email (General Inquiries):** info@blessingsmedical.com"
-    ],
-    doctors: [
-        "Our Chief Pediatrician is **Dr. Deepika Gulati Dumeer**.",
-        "We are led by Dr. Deepika Gulati Dumeer, a specialist in Pediatric Medicine."
-    ],
-    doctorDetails: {
-        "deepika": "Dr. Deepika Gulati Dumeer is our **Chief Pediatrician**. She specializes in Pediatric Medicine and Neonatology, with 15+ years of experience. Education: Harvard Medical School, Johns Hopkins Residency.",
-    },
-    services: [
-        "Our core services include:\n1. **Routine Checkups**\n2. **Vaccinations/Immunizations**\n3. **Specialized Consultations**\n4. **Laboratory Tests (Blood, Tissue)**\n\nWhich service interests you the most?"
-    ],
-    appointment: [
-        "To book an appointment, please visit our **Contact & Book** section, or call us directly at (555) 123-4567.",
-        "You can schedule easily online by signing up or logging into your patient account on our website."
-    ],
-    thanks: [
-        "You're very welcome! Is there anything else I can clarify?",
-        "Happy to assist you!"
-    ],
-    default: [
-        "I'm sorry, I couldn't understand that request. I can provide details on **Services, Dr. Deepika, Timing, or Booking**. Can you try phrasing your question differently?",
-        "That information might be outside my current knowledge base. For complex inquiries, please call the clinic directly."
-    ],
-    error: [
-        "I can only provide details on our Chief Pediatrician, **Dr. Deepika Gulati Dumeer**. Please ask about her!",
-        "Could you please clarify? I only have information for Dr. Deepika."
-    ]
-};
-
-// Simple sentiment detection based on keywords
-function getSentiment(msg) {
-    const positiveWords = ["great", "excellent", "happy", "love", "fantastic"];
-    if (positiveWords.some(word => msg.includes(word))) {
-        return 'positive';
-    }
-    return 'neutral';
-}
-
-function getRandomResponse(arr) {
-    return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function getBotResponse(message) {
-    const msg = message.toLowerCase().trim().replace(/[.,!?'"]/g, '');
-
-    // --- 1. Sentiment & Greeting ---
-    if (msg.includes("hi") || msg.includes("hello") || msg.includes("hey")) {
-        const sentiment = getSentiment(msg);
-        return getRandomResponse(botResponses.greetings[sentiment]);
-    }
-
-    // --- 2. Doctor Details Check (Specific intent) ---
-    const doctorMatch = msg.match(/(deepika|dr\. deepika|pediatrician|dr\. nitin|nitin|pathologist)/);
-
-    if (doctorMatch) {
-        const key = doctorMatch[1];
-        if (key.includes('deepika') || key.includes('pediatrician')) {
-            return botResponses.doctorDetails.deepika;
-        }
-        if (key.includes('nitin') || key.includes('pathologist')) {
-            return getRandomResponse(botResponses.error);
-        }
-    }
-
-    // --- 3. General Synonyms & Intent Mapping ---
-    const synonyms = {
-        about: ["about", "clinic", "information", "details", "what is blessings", "mission"],
-        timing: ["time", "timing", "hours", "open", "schedule", "working"],
-        location: ["location", "address", "where", "find", "place", "map"],
-        contact: ["contact", "phone", "email", "reach", "number", "call"],
-        doctors: ["doctor", "physician", "specialist"], 
-        services: ["service", "treatment", "care", "facility", "test", "lab", "checkup"],
-        appointment: ["appointment", "book", "schedule visit", "reservation", "consultation"],
-        thanks: ["thank", "thanks", "thank you"],
-        goodbye: ["bye", "see you", "goodbye", "exit"]
+    // -------------------- DOM & STATE INITIALIZATION --------------------
+    const DOMElements = {
+        slides: document.querySelectorAll('.carousel-slide'),
+        indicatorsContainer: document.getElementById('carouselIndicators'),
+        mobileMenuBtn: document.getElementById('mobileMenuBtn'),
+        mobileMenu: document.getElementById('mobileMenu'),
+        mobileNavLinks: document.querySelectorAll('.mobile-nav-link'),
+        faqButtons: document.querySelectorAll('.faq-btn'),
+        reviewForm: document.getElementById('reviewForm'),
+        reviewsDisplay: document.getElementById('reviewsDisplay'),
+        chatMessages: document.getElementById('chatMessages'),
+        chatInput: document.getElementById('chatInput'),
+        chatbot: document.getElementById('chatbot'),
+        chatbotBtn: document.getElementById('chatbotBtn'),
+        span1: document.getElementById('span1'),
+        span2: document.getElementById('span2'),
+        span3: document.getElementById('span3'),
     };
 
-    for (const [category, words] of Object.entries(synonyms)) {
-        for (const word of words) {
-            if (msg.includes(word)) return getRandomResponse(botResponses[category]);
+    let currentSlide = 0;
+    let autoSlideInterval;
+    let reviews = JSON.parse(localStorage.getItem('blessingsClinicReviews')) || [];
+
+    // -------------------- UTILITY FUNCTIONS --------------------
+
+    /** Scrolls smoothly to a target section by its ID, accounting for the fixed header. */
+    window.scrollToSection = (id) => {
+        const section = document.getElementById(id);
+        if (section) {
+            // Header is approximately 72px tall
+            const yOffset = -72;
+            const y = section.getBoundingClientRect().top + window.pageYOffset + yOffset;
+            window.scrollTo({
+                top: y,
+                behavior: 'smooth'
+            });
         }
-    }
-
-    return getRandomResponse(botResponses.default);
-}
-
-
-// -------------------- CHATBOT UI & FUNCTIONALITY --------------------
-
-// Global exposure for HTML onclick attributes
-window.toggleChatbot = toggleChatbot;
-
-function toggleChatbot() {
-    if (!chatbot) return;
-    chatbotOpen = !chatbotOpen;
-    if (chatbotOpen) {
-        chatbot.classList.remove('hidden');
-        chatbot.classList.add('animate-fade-in');
-        // Initial greeting on open (if no messages)
-        if (chatMessages.children.length === 0) {
-             addMessage(getRandomResponse(botResponses.greetings.neutral), 'bot', false);
+        // Close the mobile menu if it's open
+        if (DOMElements.mobileMenu && DOMElements.mobileMenu.classList.contains('open')) {
+            toggleMobileMenu();
         }
-        if (chatInput) chatInput.focus();
-    } else {
-        chatbot.classList.add('hidden');
-        chatbot.classList.remove('animate-fade-in');
+    };
+
+    // -------------------- MOBILE MENU LOGIC --------------------
+
+    const toggleMobileMenu = () => {
+        if (!DOMElements.mobileMenu) return;
+        const isMenuOpen = DOMElements.mobileMenu.classList.toggle('open');
+
+        // Hamburger animation simplified to use the Tailwind classes directly
+        DOMElements.span1.classList.toggle('rotate-45', isMenuOpen);
+        DOMElements.span1.classList.toggle('translate-y-1.5', isMenuOpen);
+        DOMElements.span2.classList.toggle('opacity-0', isMenuOpen);
+        DOMElements.span3.classList.toggle('-rotate-45', isMenuOpen);
+        DOMElements.span3.classList.toggle('-translate-y-1.5', isMenuOpen);
+
+        DOMElements.mobileMenuBtn?.setAttribute('aria-expanded', isMenuOpen);
+    };
+
+    DOMElements.mobileMenuBtn?.addEventListener('click', toggleMobileMenu);
+
+    // Use event delegation for mobile links to trigger smooth scroll and close menu
+    DOMElements.mobileNavLinks.forEach(link => {
+        link.addEventListener('click', (event) => {
+            event.preventDefault();
+            const targetId = link.getAttribute('href').substring(1);
+            window.scrollToSection(targetId);
+        });
+    });
+
+
+    // -------------------- CAROUSEL LOGIC --------------------
+
+    /** Updates the visibility of the current slide. */
+    const showSlide = (index) => {
+        DOMElements.slides.forEach((slide, i) => {
+            slide.classList.toggle('active', i === index);
+        });
+        currentSlide = index;
+        updateIndicators();
+    };
+
+    /** Moves to the next slide in the sequence. */
+    const nextSlide = () => {
+        const totalSlides = DOMElements.slides.length;
+        if (totalSlides === 0) return;
+        currentSlide = (currentSlide + 1) % totalSlides;
+        showSlide(currentSlide);
+    };
+
+    /** Re-renders the carousel navigation dots. */
+    const updateIndicators = () => {
+        if (!DOMElements.indicatorsContainer) return;
+        DOMElements.indicatorsContainer.innerHTML = '';
+        DOMElements.slides.forEach((_, i) => {
+            const dot = document.createElement('span');
+            dot.classList.add('w-3', 'h-3', 'rounded-full', 'cursor-pointer', 'transition-colors', 'duration-300', 'border-2', 'border-secondary-blue');
+            // IMPROVEMENT: Use clearer color contrast for indicators
+            dot.classList.toggle('bg-secondary-blue', i === currentSlide);
+            dot.classList.toggle('bg-white', i !== currentSlide); 
+            dot.addEventListener('click', () => {
+                showSlide(i);
+                startAutoSlide(); // Reset timer on manual interaction
+            });
+            DOMElements.indicatorsContainer.appendChild(dot);
+        });
+    };
+
+    const startAutoSlide = () => {
+        stopAutoSlide();
+        autoSlideInterval = setInterval(nextSlide, 5000);
+    };
+
+    const stopAutoSlide = () => {
+        if (autoSlideInterval) clearInterval(autoSlideInterval);
+    };
+
+    // Initialize Carousel
+    if (DOMElements.slides.length > 0) {
+        showSlide(currentSlide);
+        startAutoSlide();
     }
-}
 
-function addTyping(parentDiv) {
-    const typingDiv = document.createElement('div');
-    typingDiv.classList.add('bg-gray-700', 'p-3', 'rounded-xl', 'rounded-tl-none', 'inline-block', 'shadow-md');
-    typingDiv.innerHTML = `
-        <span class="dot inline-block w-2 h-2 bg-white rounded-full mx-0.5 animate-bounce" style="animation-delay: 0s;"></span>
-        <span class="dot inline-block w-2 h-2 bg-white rounded-full mx-0.5 animate-bounce" style="animation-delay: 0.2s;"></span>
-        <span class="dot inline-block w-2 h-2 bg-white rounded-full mx-0.5 animate-bounce" style="animation-delay: 0.4s;"></span>
-    `;
-    parentDiv.appendChild(typingDiv);
-    return typingDiv;
-}
+    // Carousel Swipe Support
+    let touchStartX = 0;
+    let touchEndX = 0;
 
-function typeMessage(element, text, delay = 15) {
-    const lines = text.split('\n');
-    element.innerHTML = '';
+    DOMElements.slides.forEach(slide => {
+        slide.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+            stopAutoSlide();
+        });
+        slide.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipeGesture();
+        });
+    });
 
-    function typeLine(lineIndex) {
-        if (lineIndex >= lines.length) return;
+    const handleSwipeGesture = () => {
+        const swipeDistance = touchEndX - touchStartX;
+        const minSwipeDistance = 50;
+        const totalSlides = DOMElements.slides.length;
 
-        let line = lines[lineIndex];
-        let j = 0;
-
-        if (lineIndex > 0) element.innerHTML += '<br>';
-
-        const span = document.createElement('span');
-        element.appendChild(span);
-
-        const lineInterval = setInterval(() => {
-            span.textContent += line[j];
-            j++;
-            if (j >= line.length) {
-                clearInterval(lineInterval);
-                // Introduce a slight pause before typing the next line (if any)
-                setTimeout(() => typeLine(lineIndex + 1), 100);
-            }
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }, delay);
-    }
-
-    typeLine(0);
-}
-
-function addMessage(content, sender, isTyping = true) {
-    if (!chatMessages) return;
-    const messageDiv = document.createElement('div');
-    messageDiv.classList.add('flex', 'mb-3');
-
-    if (sender === 'user') {
-        messageDiv.classList.add('justify-end', 'animate-fade-in');
-        messageDiv.innerHTML = `<div class="bg-secondary-blue text-white p-3 rounded-xl rounded-br-none max-w-[80%] shadow-md">${content}</div>`;
-        chatMessages.appendChild(messageDiv);
-    } else {
-        messageDiv.classList.add('justify-start');
-
-        if (!isTyping) {
-            // Used for initial instant greeting
-            messageDiv.innerHTML = `<div class="bg-primary-indigo text-white p-3 rounded-xl rounded-tl-none max-w-[80%] shadow-md whitespace-pre-wrap animate-fade-in">${content}</div>`;
-            chatMessages.appendChild(messageDiv);
-        } else {
-            // Typing simulation logic
-            chatMessages.appendChild(messageDiv);
-            const typingAnimation = addTyping(messageDiv);
-
-            // Realistic delay (500ms base + 15ms per character)
-            const typingDelay = 500 + Math.min(content.length * 15, 1200);
-
-            setTimeout(() => {
-                typingAnimation.remove();
-                const responseDiv = document.createElement('div');
-                responseDiv.classList.add('bg-primary-indigo', 'text-white', 'p-3', 'rounded-xl', 'rounded-tl-none', 'max-w-[80%]', 'shadow-md', 'whitespace-pre-wrap');
-                messageDiv.appendChild(responseDiv);
-                typeMessage(responseDiv, content);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }, typingDelay);
+        if (swipeDistance > minSwipeDistance) { // Swipe Right (Previous)
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            showSlide(currentSlide);
+        } else if (swipeDistance < -minSwipeDistance) { // Swipe Left (Next)
+            nextSlide();
         }
-    }
-    chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to bottom after adding
-}
-
-function sendMessage() {
-    if (!chatInput) return;
-    const message = chatInput.value.trim();
-    if (!message) return;
-
-    addMessage(message, 'user', false);
-    chatInput.value = '';
-
-    const response = getBotResponse(message);
-    addMessage(response, 'bot', true);
-}
-
-// Global exposure for HTML onclick attributes
-window.sendMessage = sendMessage;
-window.handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        sendMessage();
-    }
-};
+        startAutoSlide(); // Restart auto-slide
+    };
 
 
-// -------------------- REVIEWS SYSTEM --------------------
-let reviews = [];
+    // -------------------- FAQ ACCORDION LOGIC --------------------
 
-function loadReviews() {
-    const stored = localStorage.getItem('blessingsClinicReviews');
-    reviews = stored ? JSON.parse(stored) : [];
-    displayReviews();
-}
+    const initFAQ = () => {
+        DOMElements.faqButtons.forEach(btn => {
+            const content = btn.nextElementSibling;
+            const iconContainer = btn.querySelector(".faq-icon");
+            const plusIcon = iconContainer?.querySelector(".fa-plus");
+            const minusIcon = iconContainer?.querySelector(".fa-minus");
 
-function saveReviews() {
-    localStorage.setItem('blessingsClinicReviews', JSON.stringify(reviews));
-}
+            // Initial state setup
+            const isInitiallyExpanded = btn.getAttribute('aria-expanded') === 'true';
+            content.classList.toggle('hidden', !isInitiallyExpanded);
+            plusIcon?.classList.toggle('hidden', isInitiallyExpanded);
+            minusIcon?.classList.toggle('hidden', !isInitiallyExpanded);
 
-function displayReviews() {
-    const container = document.getElementById('reviewsDisplay');
-    if (!container) return;
+            btn.addEventListener("click", () => {
+                const isExpanded = btn.getAttribute('aria-expanded') === 'true';
 
-    if (reviews.length === 0) {
-        container.innerHTML = '<p class="text-gray-500 italic p-4">No reviews to display yet.</p>';
-        container.classList.remove('flex', 'gap-6', 'py-4', 'overflow-x-auto', 'snap-x', 'snap-mandatory', 'justify-start');
-        return;
-    }
+                // Close all other open FAQs
+                DOMElements.faqButtons.forEach(otherBtn => {
+                    if (otherBtn !== btn && otherBtn.getAttribute('aria-expanded') === 'true') {
+                        const otherContent = otherBtn.nextElementSibling;
+                        const otherPlusIcon = otherBtn.querySelector(".fa-plus");
+                        const otherMinusIcon = otherBtn.querySelector(".fa-minus");
+                        otherBtn.setAttribute('aria-expanded', 'false');
+                        otherContent.classList.add("hidden");
+                        otherPlusIcon?.classList.remove('hidden');
+                        otherMinusIcon?.classList.add('hidden');
+                    }
+                });
 
-    container.classList.add('flex', 'gap-6', 'py-4', 'overflow-x-auto', 'snap-x', 'snap-mandatory', 'justify-start');
+                // Toggle the clicked FAQ
+                btn.setAttribute('aria-expanded', String(!isExpanded));
+                content.classList.toggle("hidden");
+                plusIcon?.classList.toggle('hidden');
+                minusIcon?.classList.toggle('hidden');
+            });
+        });
+    };
+    initFAQ(); // Run initialization
 
-    container.innerHTML = reviews.map(r => {
-        const stars = r.rating ? Array(5).fill(0).map((_, i) => i < r.rating ? '★' : '☆').join('') : '';
-        return `
-            <div class="review-item bg-white p-5 rounded-xl shadow-lg hover:shadow-2xl transition min-w-[300px] flex-shrink-0 snap-center relative border-t-4 border-secondary-blue">
-                <button onclick="deleteReview(${r.id})" class="absolute top-2 right-3 text-tertiary-slate hover:text-red-500 font-bold text-xl transition" aria-label="Delete Review">&times;</button>
+    // -------------------- REVIEW SYSTEM LOGIC --------------------
+
+    const saveReviews = () => {
+        localStorage.setItem('blessingsClinicReviews', JSON.stringify(reviews));
+    };
+
+    const displayReviews = () => {
+        const container = DOMElements.reviewsDisplay;
+        if (!container) return;
+
+        if (reviews.length === 0) {
+            container.innerHTML = '<p class="text-gray-500 italic p-4 text-center w-full">Be the first to share your experience!</p>';
+            container.classList.remove('flex', 'gap-6', 'py-4', 'overflow-x-auto', 'snap-x', 'snap-mandatory', 'justify-start');
+            return;
+        }
+
+        container.classList.add('flex', 'gap-6', 'py-4', 'overflow-x-auto', 'snap-x', 'snap-mandatory', 'justify-start');
+        container.innerHTML = reviews.map(r => {
+            const stars = Array(5).fill(0).map((_, i) => i < r.rating ?
+                '<i class="fas fa-star"></i>' :
+                '<i class="fas fa-star"></i>' // FontAwesome stars for consistency
+            ).join('');
+
+            return `
+            <div class="review-item bg-white p-5 rounded-xl shadow-lg hover:shadow-2xl transition min-w-[300px] flex-shrink-0 snap-center relative border-t-4 border-secondary-blue animate-fade-in">
+                <button onclick="deleteReview(${r.id})" class="absolute top-2 right-3 text-tertiary-slate hover:text-red-500 font-bold text-lg transition z-10" aria-label="Delete Review">
+                    <i class="fas fa-times-circle"></i>
+                </button>
                 <div class="review-header flex justify-between items-center mb-3">
                     <span class="reviewer-name font-bold text-primary-indigo">${r.name}</span>
-                    ${stars ? `<span class="review-rating text-yellow-500 text-lg">${stars}</span>` : ''}
+                    <span class="review-rating text-yellow-500 text-lg">${stars}</span>
                 </div>
                 <p class="review-text text-gray-700 mb-2 italic">"${r.text}"</p>
                 <p class="review-date text-gray-400 text-sm">Reviewed on: ${r.date}</p>
-            </div>
-        `;
-    }).join('');
-}
-
-function submitReview(event) {
-    event.preventDefault();
-    const form = event.target;
-    const formData = new FormData(form);
-
-    const name = formData.get('reviewerName').trim() || 'Anonymous Patient';
-    const text = formData.get('reviewText').trim();
-    if (!text) {
-        alert('Please enter your feedback.');
-        return;
-    }
-
-    const review = {
-        id: Date.now(),
-        name: name,
-        text: text,
-        rating: parseInt(formData.get('rating')),
-        date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+            </div>`;
+        }).join('');
     };
 
-    reviews.unshift(review);
-    saveReviews();
-    displayReviews();
-    form.reset();
-}
+    window.deleteReview = (id) => {
+        reviews = reviews.filter(r => r.id !== id);
+        saveReviews();
+        displayReviews();
+    };
 
-function deleteReview(id) {
-    // Expose deleteReview globally for the onclick in displayReviews
-    reviews = reviews.filter(r => r.id !== id);
-    saveReviews();
-    displayReviews();
-}
-window.deleteReview = deleteReview; // Expose globally
+    const submitReview = (event) => {
+        event.preventDefault();
+        const form = DOMElements.reviewForm;
+        const formData = new FormData(form);
+        const name = formData.get('reviewerName').trim() || 'Anonymous Patient';
+        const text = formData.get('reviewText').trim();
 
-
-// -------------------- FAQ TOGGLE (Accordion) --------------------
-function initFAQ() {
-    const faqButtons = document.querySelectorAll(".faq-btn");
-    faqButtons.forEach(btn => {
-        const content = btn.nextElementSibling;
-        const iconContainer = btn.querySelector(".faq-icon");
-        const plusIcon = iconContainer ? iconContainer.querySelector(".fa-plus") : null;
-        const minusIcon = iconContainer ? iconContainer.querySelector(".fa-minus") : null;
-
-        const isInitiallyExpanded = btn.getAttribute('aria-expanded') === 'true';
-
-        // Set initial state
-        if (isInitiallyExpanded) {
-            content.classList.remove('hidden');
-            plusIcon?.classList.add('hidden');
-            minusIcon?.classList.remove('hidden');
-        } else {
-            content.classList.add('hidden');
-            plusIcon?.classList.remove('hidden');
-            minusIcon?.classList.add('hidden');
+        if (!text) {
+            alert('Please enter your feedback.');
+            return;
         }
 
-        btn.addEventListener("click", () => {
-            const isExpanded = btn.getAttribute('aria-expanded') === 'true';
+        const review = {
+            id: Date.now(),
+            name,
+            text,
+            rating: parseInt(formData.get('rating')),
+            date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+        };
 
-            // Close all other open FAQs
-            document.querySelectorAll(".faq-btn").forEach(otherBtn => {
-                if (otherBtn !== btn && otherBtn.getAttribute('aria-expanded') === 'true') {
-                    const otherContent = otherBtn.nextElementSibling;
-                    const otherPlusIcon = otherBtn.querySelector(".fa-plus");
-                    const otherMinusIcon = otherBtn.querySelector(".fa-minus");
+        reviews.unshift(review); // Add new review to the start
+        saveReviews();
+        displayReviews();
+        form.reset();
+        alert('Thank you for sharing your experience!');
+    };
 
-                    otherBtn.setAttribute('aria-expanded', 'false');
-                    otherContent.classList.add("hidden");
-                    otherPlusIcon?.classList.remove('hidden');
-                    otherMinusIcon?.classList.add('hidden');
+    DOMElements.reviewForm?.addEventListener('submit', submitReview);
+    displayReviews(); // Initial display
+
+
+    // -------------------- CHATBOT CORE LOGIC --------------------
+
+    const botResponses = {
+        greetings: { positive: ["Hello! I'm BlessBot, happy to help you with Blessings Clinic information today. How can I assist?", "Hi there! What can I do for you?"], neutral: ["Hello! Welcome to Blessings Child Care And Diagnostics. I'm BlessBot. How can I assist you today?", "Hi there! I can share details about our clinic, our doctors, services, and how to book appointments."] },
+        about: ["Blessings Child Care And Diagnostics is a specialized clinic focused on **pediatric care** and **advanced diagnostics**. We provide essential services like checkups, vaccinations, and laboratory testing.", "Our mission is to provide compassionate, high-quality care for infants, children, and adolescents, supported by state-of-the-art diagnostic facilities."],
+        timing: ["Our clinic hours are:\n- **Monday to Friday:** 8:00 AM – 6:00 PM\n- **Saturday & Sunday:** 9:00 AM – 4:00 PM"],
+        location: ["We are located at:\n**123 Medical Center Drive, Healthcare City, HC 12345**\n\nWe look forward to seeing you!"],
+        contact: ["You can reach us directly:\n- **Phone (Appointments):** (555) 123-4567\n- **Email (General Inquiries):** info@blessingsmedical.com"],
+        doctors: ["Our Chief Pediatrician is **Dr. Deepika Gulati Dumeer**.", "We are led by Dr. Deepika Gulati Dumeer, a specialist in Pediatric Medicine."],
+        doctorDetails: { "deepika": "Dr. Deepika Gulati Dumeer is our **Chief Pediatrician**. She specializes in Pediatric Medicine and Neonatology, with 15+ years of experience. Her focus is on holistic child health." },
+        services: ["Our core services include:\n1. **Routine Checkups**\n2. **Vaccinations/Immunizations**\n3. **Specialized Consultations**\n4. **Laboratory Tests (Blood, Tissue)**\n\nWhich service interests you the most?"],
+        appointment: ["To book an appointment, please click the **Contact & Book** link in the navigation, or call us directly at (555) 123-4567.","You can schedule easily online by visiting the 'Contact' section."],
+        thanks: ["You're very welcome! Is there anything else I can clarify?","Happy to assist you!"],
+        default: ["I'm sorry, I couldn't understand that request. I can provide details on **Services, Dr. Deepika, Timing, or Booking**. Can you try phrasing your question differently?","That information might be outside my current knowledge base. For complex inquiries, please call the clinic directly."],
+        error: ["I can only provide details on our Chief Pediatrician, **Dr. Deepika Gulati Dumeer**. Please ask about her!","Could you please clarify? I only have information for Dr. Deepika, not Dr. Nitin."]
+    };
+
+    const getSentiment = (msg) => {
+        const positiveWords = ["great", "excellent", "happy", "love", "fantastic"];
+        return positiveWords.some(word => msg.includes(word)) ? 'positive' : 'neutral';
+    };
+
+    const getRandomResponse = (arr) => {
+        return arr[Math.floor(Math.random() * arr.length)];
+    };
+
+    const getBotResponse = (message) => {
+        const msg = message.toLowerCase().trim().replace(/[.,!?'"]/g, '');
+
+        if (msg.includes("hi") || msg.includes("hello") || msg.includes("hey")) {
+            return getRandomResponse(botResponses.greetings[getSentiment(msg)]);
+        }
+
+        const doctorMatch = msg.match(/(deepika|dr deepika|pediatrician|dr nitin|nitin|pathologist)/);
+        if (doctorMatch) {
+            const key = doctorMatch[1];
+            if (key.includes('deepika') || key.includes('pediatrician')) return botResponses.doctorDetails.deepika;
+            if (key.includes('nitin') || key.includes('pathologist')) return getRandomResponse(botResponses.error);
+        }
+
+        const synonyms = {
+            about: ["about", "clinic", "information", "details", "what is blessings", "mission"],
+            timing: ["time", "timing", "hours", "open", "schedule", "working"],
+            location: ["location", "address", "where", "find", "place", "map"],
+            contact: ["contact", "phone", "email", "reach", "number", "call"],
+            doctors: ["doctor", "physician", "specialist"],
+            services: ["service", "treatment", "care", "facility", "test", "lab", "checkup"],
+            appointment: ["appointment", "book", "schedule visit", "reservation", "consultation"],
+            thanks: ["thank", "thanks", "thank you"],
+            goodbye: ["bye", "see you", "goodbye", "exit"]
+        };
+
+        for (const [category, words] of Object.entries(synonyms)) {
+            for (const word of words) {
+                if (msg.includes(word)) return getRandomResponse(botResponses[category]);
+            }
+        }
+        return getRandomResponse(botResponses.default);
+    };
+
+    // -------------------- CHATBOT UI & FUNCTIONALITY --------------------
+
+    window.toggleChatbot = () => {
+        if (!DOMElements.chatbot) return;
+        DOMElements.chatbot.classList.toggle('hidden');
+        DOMElements.chatbot.classList.toggle('animate-fade-in');
+
+        const isOpen = !DOMElements.chatbot.classList.contains('hidden');
+        if (isOpen) {
+            // Display initial greeting only on first open
+            if (DOMElements.chatMessages.children.length === 0) {
+                addMessage(getRandomResponse(botResponses.greetings.neutral), 'bot', false);
+            }
+            DOMElements.chatInput?.focus();
+        }
+    };
+
+    /** Adds a typing indicator to the chat window. */
+    const addTypingIndicator = () => {
+        const typingDiv = document.createElement('div');
+        typingDiv.classList.add('flex', 'mb-3', 'justify-start', 'typing-indicator-container');
+
+        const indicator = document.createElement('div');
+        indicator.classList.add('bg-gray-700', 'p-3', 'rounded-xl', 'rounded-tl-none', 'shadow-md', 'flex', 'items-center', 'space-x-1.5');
+        indicator.innerHTML = `
+            <span class="dot inline-block w-2 h-2 bg-white rounded-full animate-bounce" style="animation-delay:0s;"></span>
+            <span class="dot inline-block w-2 h-2 bg-white rounded-full animate-bounce" style="animation-delay:0.2s;"></span>
+            <span class="dot inline-block w-2 h-2 bg-white rounded-full animate-bounce" style="animation-delay:0.4s;"></span>
+        `;
+        
+        typingDiv.appendChild(indicator);
+        DOMElements.chatMessages.appendChild(typingDiv);
+        DOMElements.chatMessages.scrollTop = DOMElements.chatMessages.scrollHeight;
+        return typingDiv;
+    };
+    
+    /** Types out the message content line by line. */
+    const typeMessage = (element, text, delay = 15) => {
+        const lines = text.split('\n');
+        element.innerHTML = '';
+        let lineIndex = 0;
+
+        function typeLine() {
+            if (lineIndex >= lines.length) return;
+
+            let line = lines[lineIndex];
+            if (lineIndex > 0) element.innerHTML += '<br>';
+            
+            const span = document.createElement('span');
+            element.appendChild(span);
+            let charIndex = 0;
+            
+            const lineInterval = setInterval(() => {
+                span.textContent += line[charIndex];
+                charIndex++;
+                DOMElements.chatMessages.scrollTop = DOMElements.chatMessages.scrollHeight;
+
+                if (charIndex >= line.length) {
+                    clearInterval(lineInterval);
+                    lineIndex++;
+                    setTimeout(typeLine, 100); // Small pause between lines
                 }
-            });
-
-            // Toggle current FAQ
-            btn.setAttribute('aria-expanded', String(!isExpanded));
-            content.classList.toggle("hidden");
-            plusIcon?.classList.toggle('hidden');
-            minusIcon?.classList.toggle('hidden');
-        });
-    });
-}
+            }, delay);
+        }
+        typeLine();
+    };
 
 
-// -------------------- INITIALIZATION --------------------
-document.addEventListener('DOMContentLoaded', () => {
-    // Initialize Systems
-    loadReviews();
-    initFAQ();
+    /** Adds a message to the chat display. */
+    const addMessage = (content, sender, isTyping = true) => {
+        if (!DOMElements.chatMessages) return;
 
-    // Attach Event listener for the Review Form
-    document.getElementById('reviewForm')?.addEventListener('submit', submitReview);
+        if (sender === 'user') {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('flex', 'mb-3', 'justify-end', 'animate-fade-in');
+            messageDiv.innerHTML = `<div class="bg-secondary-blue text-white p-3 rounded-xl rounded-br-none max-w-[80%] shadow-md">${content}</div>`;
+            DOMElements.chatMessages.appendChild(messageDiv);
+            DOMElements.chatMessages.scrollTop = DOMElements.chatMessages.scrollHeight;
+            return;
+        }
+
+        // Bot message
+        if (!isTyping) {
+            // Direct message (e.g., initial greeting)
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('flex', 'mb-3', 'justify-start', 'animate-fade-in');
+            messageDiv.innerHTML = `<div class="bg-gray-700 text-blue-300 p-3 rounded-xl rounded-tl-none max-w-[80%] shadow-md whitespace-pre-wrap">${content}</div>`;
+            DOMElements.chatMessages.appendChild(messageDiv);
+        } else {
+            // Message with typing animation
+            const typingIndicator = addTypingIndicator();
+            const response = content;
+            const typingDelay = 500 + Math.min(response.length * 15, 1200);
+
+            setTimeout(() => {
+                typingIndicator.remove(); // Remove the typing dots
+                
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('flex', 'mb-3', 'justify-start');
+                
+                const responseDiv = document.createElement('div');
+                responseDiv.classList.add('bg-primary-indigo', 'text-white', 'p-3', 'rounded-xl', 'rounded-tl-none', 'max-w-[80%]', 'shadow-md', 'whitespace-pre-wrap');
+                
+                messageDiv.appendChild(responseDiv);
+                DOMElements.chatMessages.appendChild(messageDiv);
+
+                typeMessage(responseDiv, response);
+                DOMElements.chatMessages.scrollTop = DOMElements.chatMessages.scrollHeight;
+            }, typingDelay);
+        }
+    };
+
+
+    /** Sends the user's message and triggers a bot response. */
+    window.sendMessage = () => {
+        if (!DOMElements.chatInput) return;
+        const message = DOMElements.chatInput.value.trim();
+        if (!message) return;
+
+        addMessage(message, 'user', false);
+        DOMElements.chatInput.value = '';
+        const response = getBotResponse(message);
+        addMessage(response, 'bot', true);
+    };
+
+    /** Handles the Enter key press in the chat input. */
+    window.handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            window.sendMessage();
+        }
+    };
+    
+    // Attach event listeners for the chatbot
+    DOMElements.chatbotBtn?.addEventListener('click', window.toggleChatbot);
+    DOMElements.chatInput?.addEventListener('keypress', window.handleKeyPress);
 });
