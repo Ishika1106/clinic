@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Blessings Clinic</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script>
+    // Custom Tailwind Configuration for Deep Blue Theme
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            'primary-indigo': '#3730a3', /* Deep, rich Indigo (Authority) */
+            'secondary-blue': '#3b82f6', /* Medium Blue (Call to action) */
+            'tertiary-slate': '#475569', /* Dark Slate/Gray (Text/Accents) */
+            'blue-50': '#eff6ff', /* Light background for gradients */
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    /* Apply Inter font family */
+    body {
+        font-family: 'Inter', sans-serif;
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.6s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .toast {
+      transition: transform 280ms ease, opacity 280ms ease;
+      transform: translateY(-10px);
+      opacity: 0;
+      z-index: 50; /* Ensure toast is on top */
+    }
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    
+    /* Input focus styling using custom secondary-blue */
+    .input-focus:focus {
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); /* Adjusted opacity for secondary-blue */
+      border-color: #3b82f6 !important; /* Secondary-blue */
+    }
+    
+    /* Button hover effect for the custom indigo/blue gradient */
+    .btn-hover:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 20px rgba(55, 48, 163, 0.3); /* Using primary-indigo shadow */
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-white font-sans flex items-center justify-center min-h-screen">
+
+  <div class="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-md animate-fade-in border border-gray-100">
+    <div class="text-center mb-8">
+      <h1 class="text-2xl font-bold text-primary-indigo mb-2">Blessings Clinic</h1>
+      <h2 class="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h2>
+      <p class="text-gray-600">Sign in to your account</p>
+    </div>
+
+    <form id="loginForm" class="space-y-5">
+      <div>
+        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+        <input type="email" 
+               id="email" 
+               name="email" 
+               placeholder="Enter your email" 
+               required 
+               class="w-full border border-gray-300 p-3 rounded-lg input-focus focus:outline-none focus:border-secondary-blue transition-all duration-200">
+      </div>
+      
+      <div>
+        <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+        <input type="password" 
+               id="password" 
+               name="password" 
+               placeholder="Enter your password" 
+               required 
+               class="w-full border border-gray-300 p-3 rounded-lg input-focus focus:outline-none focus:border-secondary-blue transition-all duration-200">
+      </div>
+
+      <div class="flex items-center justify-between">
+        <div class="flex items-center">
+          <input type="checkbox" 
+                 id="remember" 
+                 name="remember" 
+                 checked
+                 class="w-4 h-4 text-secondary-blue bg-gray-100 border-gray-300 rounded focus:ring-primary-indigo focus:ring-2">
+          <label for="remember" class="ml-2 text-sm text-gray-700">Keep me signed in</label>
+        </div>
+        <a href="#" class="text-sm text-gray-400">
+          Forgot password?
+        </a>
+      </div>
+
+      <button type="submit" 
+              id="submitBtn"
+              class="w-full bg-gradient-to-r from-primary-indigo to-secondary-blue text-white font-semibold py-3 px-4 rounded-lg btn-hover transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+        Sign In
+      </button>
+    </form>
+
+    <div class="mt-6 mb-6 text-center">
+      <div class="inline-flex items-center justify-center w-full">
+        <hr class="w-full h-px bg-gray-200 border-0">
+        <span class="absolute px-3 text-sm text-gray-500 bg-white">or</span>
+      </div>
+    </div>
+    
+    <div class="text-center">
+      <p class="text-gray-600">Don't have an account? 
+        <a href="signup.html" class="text-secondary-blue hover:text-primary-indigo font-semibold hover:underline transition-colors">
+          Sign Up
+        </a>
+      </p>
+    </div>
+
+    <div class="mt-6 text-center">
+      <a href="index.html" class="text-sm text-gray-500 hover:text-gray-700 transition-colors">
+        ← Back to Homepage
+      </a>
+    </div>
+  </div>
+
+  <div id="toastWrapper" class="fixed top-5 right-5 z-50 pointer-events-none">
+    <div id="toast" class="toast p-4 rounded-lg text-white shadow-lg"></div>
+  </div>
+  
+  <script type="module">
+  // FIX: setLogLevel is imported from firebase-app, not firebase-auth.
+  import { 
+      initializeApp,
+      setLogLevel 
+  } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"; 
+  import { 
+      getAuth, 
+      signInWithEmailAndPassword, 
+      onAuthStateChanged,
+      setPersistence,
+      browserLocalPersistence
+  } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+  
+  // --- Firebase Config (Using the credentials you provided) ---
+  const firebaseConfig = {
+    apiKey: "AIzaSyC3GrH4H8rKPqpEA_41NcnX3eIMwuCZ5i4",
+    authDomain: "blessings-clinic.firebaseapp.com",
+    projectId: "blessings-clinic",
+    storageBucket: "blessings-clinic.firebasestorage.app",
+    messagingSenderId: "1053278745261",
+    appId: "1:1053278745261:web:f00b3853e90a54cc1d8c24"
+  };
+  
+  // --- Firebase and Auth variables ---
+  let app, auth;
+
+  // --- Utility: Toasts ---
+  function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    const colors = {
+      success: 'bg-secondary-blue',
+      error: 'bg-red-600', 
+      info: 'bg-primary-indigo'
+    };
+    
+    // Safety check: only proceed if the toast element exists
+    if (!toast) {
+        console.error("Toast element not found! Cannot show message:", message);
+        return; 
+    }
+    
+    toast.className = `toast p-4 rounded-lg text-white shadow-lg ${colors[type] || colors.success}`;
+    toast.textContent = message;
+    
+    // Use requestAnimationFrame for reliable visual update
+    requestAnimationFrame(() => toast.classList.add('show'));
+    
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, 4000);
+  }
+
+  // --- Firebase Initialization with Robust Error Handling ---
+  function initializeFirebase() {
+    // setLogLevel is now correctly imported from firebase-app.js
+    setLogLevel('debug'); 
+    
+    if (!firebaseConfig.apiKey) {
+      console.error("FATAL: Firebase configuration is missing.");
+      showToast("FATAL: Config missing. Check your script.", "error");
+      return;
+    }
+    
+    try {
+        app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        // Sets persistence so user stays logged in
+        setPersistence(auth, browserLocalPersistence); 
+    } catch (e) {
+        console.error("FATAL: Failed to initialize Firebase. Check network and config.", e);
+        showToast("FATAL: Firebase connection failed.", "error");
+    }
+  }
+  
+  // --- Main Logic ---
+  document.addEventListener('DOMContentLoaded', function() {
+    // 1. Initialize Firebase
+    initializeFirebase();
+    
+    const loginForm = document.getElementById('loginForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // If 'auth' is null, it means initialization failed in the try/catch block above.
+    if (!auth) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Service Unavailable';
+        return; 
+    }
+
+    // 2. Check if user is already signed in (onAuthStateChanged handles this automatically)
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const userEmail = user.email;
+        // Determine redirect based on email
+        const redirectPage = userEmail === 'admin@blessings.com' ? 'admin.html' : 'dashboard.html'; 
+        
+        showToast(`Welcome back! Redirecting to ${userEmail === 'admin@blessings.com' ? 'Admin' : 'Dashboard'}...`, 'info');
+        setTimeout(() => window.location.href = redirectPage, 1500);
+      } else {
+        // Only focus if no redirect is happening
+        document.getElementById('email').focus();
+      }
+    });
+
+    // 3. Login form submission handler
+    loginForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      if (!email || !password) {
+        showToast('Please fill in all fields.', 'error');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Signing In...';
+
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        showToast(`Login successful! Welcome, ${user.email}.`, 'success');
+
+        // Determine redirect based on email
+        const redirectPage = user.email === 'admin@blessings.com' ? 'admin.html' : 'dashboard.html';
+        setTimeout(() => window.location.href = redirectPage, 1500);
+
+      } catch (error) {
+        console.error("Firebase Login Error:", error.code, error.message);
+        
+        let errorMessage = 'Login failed. Please check your credentials.';
+        
+        switch (error.code) {
+          case 'auth/user-not-found':
+            errorMessage = 'No user found with this email.';
+            break;
+          case 'auth/wrong-password':
+            errorMessage = 'Invalid password.';
+            break;
+          case 'auth/invalid-email':
+            errorMessage = 'The email address is not valid.';
+            break;
+          case 'auth/network-request-failed':
+            errorMessage = 'Network error. Check your connection.';
+            break;
+          case 'auth/unauthorized-domain':
+            errorMessage = 'Domain error. Add your local server to Firebase Authorized Domains.';
+            break;
+          default:
+            errorMessage = `Login failed. Error: ${error.code}`;
+        }
+
+        showToast(errorMessage, 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Sign In';
+      }
+    });
+  });
+</script>
+</body>
+</html>

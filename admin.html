@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Blessings Clinic</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script>
+    // Custom Tailwind Configuration for Deep Blue Theme
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            'primary-indigo': '#3730a3',
+            'secondary-blue': '#3b82f6',
+            'tertiary-slate': '#475569',
+            'blue-50': '#eff6ff',
+            'danger-red': '#ef4444',
+            'success-green': '#10b981',
+            'whatsapp-green': '#25d366',
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    body {
+        font-family: 'Inter', 'sans-serif';
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.6s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .toast {
+      transition: transform 280ms ease, opacity 280ms ease;
+      transform: translateY(-10px);
+      opacity: 0;
+      z-index: 60;
+    }
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    
+    .btn-logout:hover {
+        background-color: #b91c1c;
+        box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+    }
+
+    .data-table-header {
+      background-color: #f1f5f9;
+    }
+    .data-row:nth-child(even) {
+        background-color: #f8fafc;
+    }
+
+    .status-pending { background-color: #fef3c7; color: #b45309; }
+    .status-confirmed { background-color: #d1fae5; color: #065f46; }
+    .status-cancelled { background-color: #fee2e2; color: #991b1b; }
+  </style>
+</head>
+<body class="bg-blue-50 font-sans min-h-screen flex flex-col">
+
+  <!-- Loading State Overlay -->
+  <div id="loadingOverlay" class="fixed inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-[100]">
+      <div class="text-primary-indigo text-xl font-semibold">Loading Admin Console...</div>
+  </div>
+
+  <!-- Navigation Bar -->
+  <nav class="bg-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center">
+          <h1 class="text-2xl font-bold text-primary-indigo">Blessings Clinic <span class="text-sm font-light text-tertiary-slate hidden sm:inline">| Admin Console</span></h1>
+        </div>
+        <div class="flex items-center space-x-4">
+          <p id="userNameDisplay" class="text-tertiary-slate font-medium hidden md:block text-sm">Admin</p>
+          <button id="logoutBtn" class="bg-danger-red text-white font-semibold py-2 px-4 rounded-lg text-sm transition-all duration-200 shadow-md btn-logout">
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content Area -->
+  <main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 flex-grow w-full">
+    
+    <div class="mb-8 animate-fade-in">
+      <h2 class="text-3xl font-extrabold text-gray-800">System Overview</h2>
+      <p class="text-lg text-tertiary-slate mt-2">Manage patients, appointments, and system health.</p>
+      <p class="text-xs text-gray-400 mt-1">App ID: <span id="appIdDisplay">Loading...</span></p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-4 gap-6 mb-10 animate-fade-in">
+      
+      <!-- Total Patients -->
+      <div class="bg-white p-6 rounded-xl shadow-xl border-l-4 border-secondary-blue">
+        <p class="text-sm font-medium text-tertiary-slate">Total Registered Patients</p>
+        <p id="totalPatientsCount" class="text-4xl font-bold text-gray-800 mt-1">0</p>
+      </div>
+
+      <!-- Today's Appointments -->
+      <div class="bg-white p-6 rounded-xl shadow-xl border-l-4 border-primary-indigo">
+        <p class="text-sm font-medium text-tertiary-slate">Today's Appointments</p>
+        <p id="todayAppointmentsCount" class="text-4xl font-bold text-gray-800 mt-1">0</p>
+      </div>
+
+      <!-- Pending Appointments -->
+      <div class="bg-white p-6 rounded-xl shadow-xl border-l-4 border-yellow-500">
+        <p class="text-sm font-medium text-tertiary-slate">Pending Appointments</p>
+        <p id="pendingAppointmentsCount" class="text-4xl font-bold text-gray-800 mt-1">0</p>
+      </div>
+
+      <!-- Confirmed Appointments -->
+      <div class="bg-white p-6 rounded-xl shadow-xl border-l-4 border-success-green">
+        <p class="text-sm font-medium text-tertiary-slate">Confirmed Appointments</p>
+        <p id="confirmedAppointmentsCount" class="text-4xl font-bold text-gray-800 mt-1">0</p>
+      </div>
+
+    </div>
+
+    <!-- Today's Appointments Section -->
+    <div class="bg-white p-6 rounded-xl shadow-xl animate-fade-in mb-8">
+      <h3 class="text-2xl font-bold text-primary-indigo mb-6 border-b pb-3">Today's Appointments & Reminders</h3>
+      
+      <div id="appointmentListContainer" class="overflow-x-auto">
+        <div class="text-center py-8 text-tertiary-slate" id="appointmentListStatus">Checking for today's appointments...</div>
+        <table class="min-w-full divide-y divide-gray-200 hidden" id="appointmentTable">
+          <thead>
+            <tr class="data-table-header text-left text-xs font-semibold uppercase text-tertiary-slate tracking-wider">
+              <th class="p-3 rounded-tl-lg">Time</th>
+              <th class="p-3">Patient</th>
+              <th class="p-3 hidden sm:table-cell">Service</th>
+              <th class="p-3">Status</th>
+              <th class="p-3">Reminders</th>
+              <th class="p-3 rounded-tr-lg">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="appointmentTableBody" class="divide-y divide-gray-200">
+            <!-- Appointment Rows go here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- All Appointments Management Section -->
+    <div class="bg-white p-6 rounded-xl shadow-xl animate-fade-in mb-8">
+      <h3 class="text-2xl font-bold text-primary-indigo mb-6 border-b pb-3">All Appointments Management</h3>
+      
+      <div id="allAppointmentListContainer" class="overflow-x-auto">
+        <div class="text-center py-8 text-tertiary-slate" id="allAppointmentListStatus">Loading all appointments...</div>
+        <table class="min-w-full divide-y divide-gray-200 hidden" id="allAppointmentTable">
+          <thead>
+            <tr class="data-table-header text-left text-xs font-semibold uppercase text-tertiary-slate tracking-wider">
+              <th class="p-3 rounded-tl-lg">Date</th>
+              <th class="p-3">Time</th>
+              <th class="p-3">Patient</th>
+              <th class="p-3 hidden sm:table-cell">Service</th>
+              <th class="p-3">Status</th>
+              <th class="p-3 rounded-tr-lg">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="allAppointmentTableBody" class="divide-y divide-gray-200">
+            <!-- All Appointment Rows go here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Patient Management Section -->
+    <div class="bg-white p-6 rounded-xl shadow-xl animate-fade-in">
+      <h3 class="text-2xl font-bold text-primary-indigo mb-6 border-b pb-3">Patient Registry</h3>
+      
+      <div id="patientListContainer" class="overflow-x-auto">
+        <div class="text-center py-8 text-tertiary-slate" id="patientListStatus">Loading patients...</div>
+        <table class="min-w-full divide-y divide-gray-200 hidden" id="patientTable">
+          <thead>
+            <tr class="data-table-header text-left text-xs font-semibold uppercase text-tertiary-slate tracking-wider">
+              <th class="p-3 rounded-tl-lg">Name</th>
+              <th class="p-3">Email</th>
+              <th class="p-3 hidden sm:table-cell">Phone</th>
+              <th class="p-3 hidden lg:table-cell">User ID</th>
+              <th class="p-3 rounded-tr-lg">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="patientTableBody" class="divide-y divide-gray-200">
+            <!-- Patient Rows go here -->
+          </tbody>
+        </table>
+      </div>
+      
+    </div>
+    
+  </main>
+
+  <div id="toastWrapper" class="fixed top-5 right-5 z-50 pointer-events-none">
+    <div id="toast" class="toast p-4 rounded-lg text-white shadow-lg"></div>
+  </div>
+
+  <!-- Patient Detail/Edit Modal -->
+  <div id="patientModal" class="fixed inset-0 bg-gray-900 bg-opacity-70 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden">
+      <div class="p-6 border-b flex justify-between items-center">
+        <h3 class="text-2xl font-bold text-primary-indigo" id="modalTitle">Edit Patient Record</h3>
+        <button type="button" id="closeModalBtn" class="text-gray-400 hover:text-gray-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+      </div>
+
+      <form id="patientEditForm" class="p-6 space-y-4">
+        <input type="hidden" id="editPatientId">
+        
+        <!-- Name Field -->
+        <div>
+          <label for="editPatientName" class="block text-sm font-medium text-tertiary-slate mb-1">Full Name</label>
+          <input type="text" id="editPatientName" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-secondary-blue focus:border-secondary-blue">
+        </div>
+
+        <!-- Email Field -->
+        <div>
+          <label for="editPatientEmail" class="block text-sm font-medium text-tertiary-slate mb-1">Email (Read Only)</label>
+          <input type="email" id="editPatientEmail" disabled class="w-full p-3 bg-gray-100 border border-gray-300 rounded-lg text-gray-500">
+        </div>
+
+        <!-- Phone Field -->
+        <div>
+          <label for="editPatientPhone" class="block text-sm font-medium text-tertiary-slate mb-1">Phone Number</label>
+          <input type="tel" id="editPatientPhone" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-secondary-blue focus:border-secondary-blue">
+        </div>
+
+        <!-- Patient Status Field -->
+        <div>
+          <label for="editPatientStatus" class="block text-sm font-medium text-tertiary-slate mb-1">Internal Status/Notes</label>
+          <textarea id="editPatientStatus" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-secondary-blue focus:border-secondary-blue"></textarea>
+        </div>
+
+        <div class="pt-4 flex justify-end space-x-3">
+          <button type="submit" class="bg-primary-indigo hover:bg-secondary-blue text-white font-semibold py-2 px-4 rounded-lg transition-colors shadow-md">
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { 
+        initializeApp,
+        setLogLevel
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { 
+        getAuth, 
+        onAuthStateChanged,
+        signOut,
+        signInWithCustomToken
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { 
+        getFirestore, 
+        collection, 
+        query, 
+        onSnapshot,
+        doc,
+        getDoc,
+        updateDoc,
+        where,
+        orderBy
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    
+    // --- Global Variables (Provided by Canvas Environment) ---
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+    
+    // --- Firebase Configuration ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyC3GrH4H8rKPqpEA_41NcnX3eIMwuCZ5i4",
+      authDomain: "blessings-clinic.firebaseapp.com",
+      projectId: "blessings-clinic",
+      storageBucket: "blessings-clinic.firebasestorage.app",
+      messagingSenderId: "1053278745261",
+      appId: "1:1053278745261:web:f00b3853e90a54cc1d8c24"
+    };
+
+    
+    // --- Firebase Initialization ---
+    let app, auth, db;
+    let authInitialized = false;
+    const ADMIN_EMAIL = 'admin@blessings.com';
+
+    function initializeFirebaseObjects() {
+      console.log("--- Starting initializeFirebaseObjects Check ---");
+      
+      if (!firebaseConfig.apiKey) {
+        console.error("Firebase Initialization Failed: Config object is missing the critical 'apiKey'.");
+        showToast('System Error: Firebase config is missing API key.', 'error');
+        return false;
+      }
+
+      setLogLevel('debug');
+      try {
+        app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+        console.log("Firebase services initialized successfully.");
+        return true;
+      } catch(e) {
+        console.error("Error during core Firebase object initialization:", e);
+        showToast('FATAL: Core Firebase setup failed.', 'error');
+        return false;
+      }
+    }
+    
+    async function establishSession(authInstance, token) {
+        if (!token) {
+            console.log("No custom token provided for Admin panel.");
+            return; 
+        }
+
+        try {
+            console.log("Attempting sign in with custom token...");
+            await signInWithCustomToken(authInstance, token);
+            console.log("Sign in with custom token successful.");
+        } catch (e) {
+            console.error("Error establishing Firebase session:", e);
+        }
+    }
+    
+    // --- Utility Functions ---
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const colors = {
+        success: 'bg-secondary-blue',
+        error: 'bg-red-600', 
+        info: 'bg-primary-indigo'
+      };
+      
+      if (!toast) {
+        console.error("Toast element not found!");
+        return; 
+      }
+
+      toast.className = `toast p-4 rounded-lg text-white shadow-lg ${colors[type] || colors.success}`;
+      toast.textContent = message;
+      
+      requestAnimationFrame(() => toast.classList.add('show'));
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 4000);
+    }
+
+    function getTodayDateString() {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    function generateReminderLinks(phone, email, name, time, reason) {
+        const phoneClean = phone ? phone.replace(/[^0-9]/g, '') : '';
+        
+        const reminderText = `Dear ${name},\n\nThis is a friendly reminder for your appointment at Blessings Clinic TODAY at ${time}.\n\nReason: ${reason}\n\nWe look forward to seeing you!`;
+        const encodedText = encodeURIComponent(reminderText);
+        
+        const whatsappLink = phoneClean ? `whatsapp://send?phone=${phoneClean}&text=${encodedText}` : null;
+        
+        const emailSubject = encodeURIComponent(`Appointment Reminder: Today at ${time}`);
+        const emailLink = email ? `mailto:${email}?subject=${emailSubject}&body=${encodedText}` : null;
+
+        return { whatsappLink, emailLink };
+    }
+
+    // --- Enhanced Appointment Status Management ---
+    async function updateAppointmentStatus(appointmentId, newStatus) {
+        if (!db) {
+            showToast('Database not initialized.', 'error');
+            return;
+        }
+
+        try {
+            const docRef = doc(db, `artifacts/${appId}/public/data/appointments`, appointmentId);
+            await updateDoc(docRef, {
+                status: newStatus,
+                updatedAt: new Date().toISOString(),
+                updatedBy: 'admin'
+            });
+
+            showToast(`Appointment ${newStatus.toLowerCase()} successfully!`, 'success');
+        } catch (error) {
+            console.error("Error updating appointment status:", error);
+            showToast(`Failed to update appointment: ${error.message}`, 'error');
+        }
+    }
+    
+    // --- Patient Management Functions ---
+    async function openPatientDetails(userId) {
+        if (!db) {
+            showToast('Database not initialized.', 'error');
+            return;
+        }
+
+        const patientModal = document.getElementById('patientModal');
+        const editPatientId = document.getElementById('editPatientId');
+        const editPatientName = document.getElementById('editPatientName');
+        const editPatientEmail = document.getElementById('editPatientEmail');
+        const editPatientPhone = document.getElementById('editPatientPhone');
+        const editPatientStatus = document.getElementById('editPatientStatus');
+
+        try {
+            const docRef = doc(db, `artifacts/${appId}/public/data/users`, userId);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const patient = docSnap.data();
+                
+                editPatientId.value = userId;
+                editPatientName.value = patient.name || patient.displayName || patient.parentName || '';
+                editPatientEmail.value = patient.email || '';
+                editPatientPhone.value = patient.phone || '';
+                editPatientStatus.value = patient.status || '';
+
+                patientModal.classList.remove('hidden');
+
+            } else {
+                showToast('Patient record not found.', 'error');
+            }
+        } catch (error) {
+            console.error("Error fetching patient details:", error);
+            showToast('Failed to load patient data.', 'error');
+        }
+    }
+
+    async function savePatientDetails(e) {
+        e.preventDefault();
+        
+        const userId = document.getElementById('editPatientId').value;
+        const name = document.getElementById('editPatientName').value;
+        const phone = document.getElementById('editPatientPhone').value;
+        const status = document.getElementById('editPatientStatus').value;
+        const patientModal = document.getElementById('patientModal');
+
+        if (!db || !userId) {
+            showToast('System error: Missing user ID or database connection.', 'error');
+            return;
+        }
+
+        try {
+            const docRef = doc(db, `artifacts/${appId}/public/data/users`, userId);
+            
+            await updateDoc(docRef, {
+                name: name,
+                phone: phone,
+                status: status,
+                updatedAt: new Date().toISOString(),
+                updatedBy: 'admin'
+            });
+
+            showToast(`Patient ${name} updated successfully!`, 'success');
+            patientModal.classList.add('hidden');
+
+        } catch (error) {
+            console.error("Error updating patient details:", error);
+            showToast(`Error saving changes: ${error.message}`, 'error');
+        }
+    }
+
+    function setupPatientListener() {
+        if (!authInitialized || !db || auth.currentUser?.email !== ADMIN_EMAIL) {
+            console.warn("Patient Listener skipped: Auth not ready or user is not Admin.");
+            return;
+        }
+
+        const patientListStatus = document.getElementById('patientListStatus');
+        const patientTable = document.getElementById('patientTable');
+        const patientTableBody = document.getElementById('patientTableBody');
+        const totalPatientsCount = document.getElementById('totalPatientsCount');
+
+        const patientsRef = collection(db, `artifacts/${appId}/public/data/users`); 
+        const q = query(patientsRef);
+
+        console.log(`Setting up listener for patients at: artifacts/${appId}/public/data/users`);
+
+        patientListStatus.textContent = 'Awaiting data from Firestore...';
+
+        onSnapshot(q, (snapshot) => {
+            patientTableBody.innerHTML = '';
+            const patients = [];
+
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                if (data.email !== ADMIN_EMAIL) {
+                    patients.push({ id: doc.id, ...data });
+                }
+            });
+            
+            totalPatientsCount.textContent = patients.length;
+
+            if (patients.length === 0) {
+                patientListStatus.textContent = 'No registered patients found yet.';
+                patientListStatus.classList.remove('hidden');
+                patientTable.classList.add('hidden');
+            } else {
+                patientListStatus.classList.add('hidden');
+                patientTable.classList.remove('hidden');
+
+                patients.forEach(patient => {
+                    const row = patientTableBody.insertRow();
+                    row.className = 'data-row hover:bg-secondary-blue/10 transition-colors';
+                    row.innerHTML = `
+                        <td class="p-3 font-semibold text-tertiary-slate">${patient.name || patient.displayName || patient.parentName || 'N/A'}</td>
+                        <td class="p-3 text-sm text-gray-600">${patient.email || 'N/A'}</td>
+                        <td class="p-3 text-sm text-gray-600 hidden sm:table-cell">${patient.phone || 'N/A'}</td>
+                        <td class="p-3 text-xs text-gray-500 hidden lg:table-cell">${patient.id}</td>
+                        <td class="p-3">
+                            <button class="text-primary-indigo hover:text-secondary-blue font-medium text-sm" data-user-id="${patient.id}">View/Edit</button>
+                        </td>
+                    `;
+                });
+            }
+        }, (error) => {
+            console.error("Error listening to patients:", error);
+            showToast('Error loading patients.', 'error'); 
+            patientListStatus.textContent = 'Error loading patient data.';
+        });
+    }
+
+    function setupTodayAppointmentListener() {
+        if (!authInitialized || !db || auth.currentUser?.email !== ADMIN_EMAIL) {
+            console.warn("Today Appointment Listener skipped.");
+            return;
+        }
+        
+        const todayDate = getTodayDateString();
+        const appointmentListStatus = document.getElementById('appointmentListStatus');
+        const appointmentTable = document.getElementById('appointmentTable');
+        const appointmentTableBody = document.getElementById('appointmentTableBody');
+        const todayAppointmentsCount = document.getElementById('todayAppointmentsCount');
+
+        const appointmentsRef = collection(db, `artifacts/${appId}/public/data/appointments`);
+        const q = query(appointmentsRef);
+
+        console.log(`Setting up TODAY listener for appointments: ${todayDate}`);
+
+        onSnapshot(q, (snapshot) => {
+            appointmentTableBody.innerHTML = '';
+            const todayAppointments = [];
+
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                // Filter for today's appointments
+                if (data.appointmentDate === todayDate) {
+                    todayAppointments.push({ id: doc.id, ...data });
+                }
+            });
+
+            // Sort by time
+            todayAppointments.sort((a, b) => (a.appointmentTime > b.appointmentTime) ? 1 : -1);
+
+            todayAppointmentsCount.textContent = todayAppointments.length;
+
+            if (todayAppointments.length === 0) {
+                appointmentListStatus.textContent = `No appointments scheduled for today, ${todayDate}.`;
+                appointmentListStatus.classList.remove('hidden');
+                appointmentTable.classList.add('hidden');
+            } else {
+                appointmentListStatus.classList.add('hidden');
+                appointmentTable.classList.remove('hidden');
+
+                todayAppointments.forEach(appt => {
+                    const patientName = appt.childName || appt.parentName || 'Unknown';
+                    const patientEmail = appt.patientEmail || '';
+                    const patientPhone = appt.patientPhone || ''; 
+
+                    const { whatsappLink, emailLink } = generateReminderLinks(
+                        patientPhone, 
+                        patientEmail, 
+                        patientName, 
+                        appt.appointmentTime, 
+                        appt.service || appt.reason
+                    );
+
+                    const statusClass = `status-${appt.status.toLowerCase()}`;
+
+                    const row = appointmentTableBody.insertRow();
+                    row.className = 'data-row hover:bg-secondary-blue/10 transition-colors';
+                    row.innerHTML = `
+                        <td class="p-3 font-semibold text-primary-indigo">${appt.appointmentTime || 'N/A'}</td>
+                        <td class="p-3 text-sm text-gray-800">
+                            <div class="font-medium">${patientName}</div>
+                            <div class="text-xs text-gray-500">${patientEmail}</div>
+                        </td>
+                        <td class="p-3 text-sm text-gray-600 hidden sm:table-cell">${appt.service || 'Check-up'}</td>
+                        <td class="p-3">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full uppercase ${statusClass}">${appt.status}</span>
+                        </td>
+                        <td class="p-3 flex flex-wrap gap-2">
+                            ${whatsappLink ? 
+                                `<a href="${whatsappLink}" target="_blank" class="bg-whatsapp-green hover:bg-green-700 text-white text-xs font-bold py-1 px-3 rounded-full transition-colors shadow-md">
+                                    WhatsApp
+                                </a>` : 
+                                `<span class="text-xs text-gray-400 p-1">No Phone</span>`
+                            }
+                            ${emailLink ? 
+                                `<a href="${emailLink}" target="_blank" class="bg-secondary-blue hover:bg-primary-indigo text-white text-xs font-bold py-1 px-3 rounded-full transition-colors shadow-md">
+                                    Email
+                                </a>` : 
+                                `<span class="text-xs text-gray-400 p-1">No Email</span>`
+                            }
+                        </td>
+                        <td class="p-3">
+                            <div class="flex flex-col gap-1">
+                                ${appt.status === 'Pending' ? `
+                                    <button class="confirm-btn text-xs bg-success-green text-white px-2 py-1 rounded font-medium hover:bg-green-700" data-id="${appt.id}">
+                                        Confirm
+                                    </button>
+                                    <button class="cancel-btn text-xs bg-danger-red text-white px-2 py-1 rounded font-medium hover:bg-red-700" data-id="${appt.id}">
+                                        Cancel
+                                    </button>
+                                ` : appt.status === 'Confirmed' ? `
+                                    <button class="cancel-btn text-xs bg-danger-red text-white px-2 py-1 rounded font-medium hover:bg-red-700" data-id="${appt.id}">
+                                        Cancel
+                                    </button>
+                                ` : `
+                                    <span class="text-xs text-gray-500">No actions</span>
+                                `}
+                            </div>
+                        </td>
+                    `;
+                });
+
+                // Add event listeners for action buttons
+                document.querySelectorAll('.confirm-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        updateAppointmentStatus(e.target.dataset.id, 'Confirmed');
+                    });
+                });
+
+                document.querySelectorAll('.cancel-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        updateAppointmentStatus(e.target.dataset.id, 'Cancelled');
+                    });
+                });
+            }
+
+        }, (error) => {
+            console.error("Error listening to today's appointments:", error);
+            showToast('Error loading today\'s appointments.', 'error');
+            appointmentListStatus.textContent = 'Error loading appointment data.';
+        });
+    }
+
+    function setupAllAppointmentsListener() {
+        if (!authInitialized || !db || auth.currentUser?.email !== ADMIN_EMAIL) {
+            console.warn("All Appointments Listener skipped.");
+            return;
+        }
+
+        const allAppointmentListStatus = document.getElementById('allAppointmentListStatus');
+        const allAppointmentTable = document.getElementById('allAppointmentTable');
+        const allAppointmentTableBody = document.getElementById('allAppointmentTableBody');
+        const pendingAppointmentsCount = document.getElementById('pendingAppointmentsCount');
+        const confirmedAppointmentsCount = document.getElementById('confirmedAppointmentsCount');
+
+        const appointmentsRef = collection(db, `artifacts/${appId}/public/data/appointments`);
+        const q = query(appointmentsRef, orderBy('appointmentDate'), orderBy('appointmentTime'));
+
+        console.log(`Setting up ALL appointments listener`);
+
+        onSnapshot(q, (snapshot) => {
+            allAppointmentTableBody.innerHTML = '';
+            const allAppointments = [];
+            let pendingCount = 0;
+            let confirmedCount = 0;
+
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                allAppointments.push({ id: doc.id, ...data });
+
+                // Count statuses
+                if (data.status === 'Pending') pendingCount++;
+                if (data.status === 'Confirmed') confirmedCount++;
+            });
+
+            // Update counts
+            pendingAppointmentsCount.textContent = pendingCount;
+            confirmedAppointmentsCount.textContent = confirmedCount;
+
+            if (allAppointments.length === 0) {
+                allAppointmentListStatus.textContent = 'No appointments found in the system.';
+                allAppointmentListStatus.classList.remove('hidden');
+                allAppointmentTable.classList.add('hidden');
+            } else {
+                allAppointmentListStatus.classList.add('hidden');
+                allAppointmentTable.classList.remove('hidden');
+
+                allAppointments.forEach(appt => {
+                    const patientName = appt.childName || appt.parentName || 'Unknown';
+                    const statusClass = `status-${appt.status.toLowerCase()}`;
+
+                    const row = allAppointmentTableBody.insertRow();
+                    row.className = 'data-row hover:bg-secondary-blue/10 transition-colors';
+                    row.innerHTML = `
+                        <td class="p-3 font-semibold text-tertiary-slate">${appt.appointmentDate || 'N/A'}</td>
+                        <td class="p-3 text-sm text-primary-indigo font-medium">${appt.appointmentTime || 'N/A'}</td>
+                        <td class="p-3 text-sm text-gray-800">
+                            <div class="font-medium">${patientName}</div>
+                            <div class="text-xs text-gray-500">${appt.patientEmail || 'No email'}</div>
+                        </td>
+                        <td class="p-3 text-sm text-gray-600 hidden sm:table-cell">${appt.service || 'Check-up'}</td>
+                        <td class="p-3">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full uppercase ${statusClass}">${appt.status}</span>
+                        </td>
+                        <td class="p-3">
+                            <div class="flex flex-wrap gap-1">
+                                ${appt.status === 'Pending' ? `
+                                    <button class="confirm-all-btn text-xs bg-success-green text-white px-2 py-1 rounded font-medium hover:bg-green-700" data-id="${appt.id}">
+                                        Confirm
+                                    </button>
+                                    <button class="cancel-all-btn text-xs bg-danger-red text-white px-2 py-1 rounded font-medium hover:bg-red-700" data-id="${appt.id}">
+                                        Cancel
+                                    </button>
+                                ` : appt.status === 'Confirmed' ? `
+                                    <button class="cancel-all-btn text-xs bg-danger-red text-white px-2 py-1 rounded font-medium hover:bg-red-700" data-id="${appt.id}">
+                                        Cancel
+                                    </button>
+                                ` : `
+                                    <span class="text-xs text-gray-500">Cancelled</span>
+                                `}
+                            </div>
+                        </td>
+                    `;
+                });
+
+                // Add event listeners for all appointment action buttons
+                document.querySelectorAll('.confirm-all-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        updateAppointmentStatus(e.target.dataset.id, 'Confirmed');
+                    });
+                });
+
+                document.querySelectorAll('.cancel-all-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        updateAppointmentStatus(e.target.dataset.id, 'Cancelled');
+                    });
+                });
+            }
+
+        }, (error) => {
+            console.error("Error listening to all appointments:", error);
+            showToast('Error loading all appointments.', 'error');
+            allAppointmentListStatus.textContent = 'Error loading appointment data.';
+        });
+    }
+
+    // --- Authentication and UI Logic ---
+
+    document.addEventListener('DOMContentLoaded', async function() {
+      
+      console.log("--- START: Admin Script Initialization ---");
+      console.log("Using Firebase Config:", firebaseConfig); 
+      
+      const isInitialized = initializeFirebaseObjects();
+      
+      console.log("Result of initializeFirebaseObjects:", isInitialized);
+
+      const loadingOverlay = document.getElementById('loadingOverlay');
+      const logoutBtn = document.getElementById('logoutBtn');
+      const appIdDisplay = document.getElementById('appIdDisplay');
+
+      appIdDisplay.textContent = appId;
+      
+      if (!isInitialized || !auth) {
+        console.error("FATAL: Firebase Auth object is not defined.");
+        loadingOverlay.classList.add('hidden');
+        showToast('System Error: Firebase services unavailable.', 'error');
+        return;
+      }
+      
+      // 1. Establish the session 
+      await establishSession(auth, initialAuthToken);
+
+      // 2. Check Authentication Status via Listener
+      onAuthStateChanged(auth, (user) => {
+        authInitialized = true;
+        
+        if (user && user.email === ADMIN_EMAIL) {
+          // Admin is signed in
+          document.getElementById('userNameDisplay').textContent = user.displayName || user.email;
+          loadingOverlay.classList.add('hidden');
+          
+          // Load data listeners
+          setupPatientListener();
+          setupTodayAppointmentListener();
+          setupAllAppointmentsListener();
+
+        } else if (user) {
+          // Logged in but NOT admin
+          showToast('Access denied. Redirecting to Patient Dashboard.', 'error');
+          loadingOverlay.classList.add('hidden');
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 1500);
+
+        } else {
+          // Not logged in
+          showToast('You must be logged in as an Admin. Redirecting to login.', 'error');
+          loadingOverlay.classList.add('hidden');
+          setTimeout(() => {
+            window.location.href = 'login.html';
+          }, 1500);
+        }
+      });
+      
+      // 3. Logout Handler
+      logoutBtn.addEventListener('click', async () => {
+        console.log("Logout button clicked.");
+        try {
+            if (!auth) {
+                console.error("Auth object is null during logout attempt.");
+                showToast('Logout Failed: Authentication service unavailable.', 'error');
+                return;
+            }
+            await signOut(auth);
+            console.log("Firebase signOut successful.");
+            showToast('Admin logged out successfully.', 'success');
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 1000);
+        } catch (error) {
+            console.error("Logout Error:", error);
+            showToast(`Failed to log out: ${error.message}`, 'error');
+        }
+      });
+
+      // 4. Setup Event Listeners for Dynamic Patient Table Content
+      document.getElementById('patientTableBody').addEventListener('click', (event) => {
+        const button = event.target.closest('button');
+        if (button && button.dataset.userId) {
+            openPatientDetails(button.dataset.userId);
+        }
+      });
+
+      // 5. Setup Modal and Form Handlers
+      document.getElementById('closeModalBtn').addEventListener('click', () => {
+        document.getElementById('patientModal').classList.add('hidden');
+      });
+
+      document.getElementById('patientEditForm').addEventListener('submit', savePatientDetails);
+
+      // 6. Click outside modal to close
+      document.getElementById('patientModal').addEventListener('click', (e) => {
+        if (e.target.id === 'patientModal') {
+          document.getElementById('patientModal').classList.add('hidden');
+        }
+      });
+
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up - Blessings Clinic</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            'primary-indigo': '#3730a3',
+            'secondary-blue': '#3b82f6',
+            'tertiary-slate': '#475569',
+            'blue-50': '#eff6ff',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .animate-fade-in { animation: fadeIn 0.6s ease-out; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .toast { transition: transform 280ms ease, opacity 280ms ease; transform: translateY(-10px); opacity: 0; z-index: 50; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .input-focus:focus {
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+      border-color: #3b82f6 !important;
+    }
+    .password-strength { height: 4px; border-radius: 2px; transition: all 0.3s ease; }
+    .btn-hover:hover { transform: translateY(-1px); box-shadow: 0 10px 20px rgba(55, 48, 163, 0.3); }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-white font-sans flex items-center justify-center min-h-screen">
+
+  <div class="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-md animate-fade-in border border-gray-100">
+    <div class="text-center mb-8">
+      <h1 class="text-2xl font-bold text-primary-indigo mb-2">Blessings Clinic</h1>
+      <h2 class="text-3xl font-bold text-gray-800 mb-2">Create Account</h2>
+      <p class="text-gray-600">Join us for better healthcare</p>
+    </div>
+
+    <form id="signupForm" class="space-y-5">
+      <div>
+        <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+        <input type="text" id="name" required
+               placeholder="Enter your full name"
+               class="w-full border border-gray-300 p-3 rounded-lg input-focus focus:outline-none transition-all duration-200">
+      </div>
+      
+      <div>
+        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+        <input type="email" id="email" required
+               placeholder="Enter your email"
+               class="w-full border border-gray-300 p-3 rounded-lg input-focus focus:outline-none transition-all duration-200">
+        <div id="emailError" class="text-red-500 text-sm mt-1 hidden"></div>
+      </div>
+
+      <div>
+        <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+        <input type="tel" id="phone"
+               placeholder="Enter your phone number (optional)"
+               class="w-full border border-gray-300 p-3 rounded-lg input-focus focus:outline-none transition-all duration-200">
+      </div>
+      
+      <div>
+        <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+        <input type="password" id="password" required
+               placeholder="Enter your password"
+               class="w-full border border-gray-300 p-3 rounded-lg input-focus focus:outline-none transition-all duration-200">
+        <div id="passwordStrengthBar" class="password-strength mt-1 bg-gray-200"></div>
+      </div>
+      
+      <div>
+        <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+        <input type="password" id="confirmPassword" required
+               placeholder="Confirm your password"
+               class="w-full border border-gray-300 p-3 rounded-lg input-focus focus:outline-none transition-all duration-200">
+        <div id="confirmPasswordError" class="text-red-500 text-sm mt-1 hidden">Passwords do not match.</div>
+      </div>
+
+      <button type="submit" id="submitBtn"
+              class="w-full bg-gradient-to-r from-primary-indigo to-secondary-blue text-white font-semibold py-3 px-4 rounded-lg btn-hover transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+        Sign Up with Email
+      </button>
+    </form>
+    
+    <div class="flex items-center space-x-2 my-5">
+      <div class="flex-grow border-t border-gray-300"></div>
+      <span class="text-sm font-medium text-gray-500">OR</span>
+      <div class="flex-grow border-t border-gray-300"></div>
+    </div>
+
+    <button type="button" id="googleSignupBtn"
+            class="w-full flex items-center justify-center space-x-3 bg-white border border-gray-300 text-gray-700 font-semibold py-3 px-4 rounded-lg btn-hover transition-all duration-200 hover:bg-gray-50 shadow-md">
+        <svg class="w-5 h-5" viewBox="0 0 48 48" fill="none"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.382-5.744 7.558-10.748 7.558-8.207 0-14.846-6.639-14.846-14.847 0-8.207 6.639-14.846 14.846-14.846 4.368 0 8.169 1.835 10.865 4.606l6.23-6.23C36.702 5.093 30.457 2 24.004 2c-12.133 0-22 9.867-22 22s9.867 22 22 22c11.084 0 21.05-8.086 21.05-21.886 0-1.341-.122-2.649-.335-3.921z"/><path fill="#FF3D00" d="M6.023 28.051l6.012-4.636c-.452-1.353-.715-2.825-.715-4.372s.263-3.019.715-4.372l-6.012-4.636C4.09 13.91 2 18.73 2 24c0 5.27 2.09 10.09 4.023 4.051z"/><path fill="#4CAF50" d="M24 46c5.568 0 10.748-2.062 14.739-5.555l-6.23-6.23c-2.427 1.808-5.568 2.87-8.509 2.87-4.994 0-9.088-3.176-10.737-7.558l-6.012 4.636C9.954 42.174 16.582 46 24 46z"/><path fill="#1976D2" d="M43.611 20.083a1.44 1.44 0 0 0-.335-3.921H24v4h11.303c-.419 1.797-.99 3.6-1.745 5.311l6.012 4.636c.925-1.936 1.621-3.996 1.941-6.196z"/></svg>
+        <span>Sign Up with Google</span>
+    </button>
+
+    <div class="mt-6 text-center">
+      <p class="text-gray-600">Already have an account? 
+        <a href="login.html" class="text-secondary-blue hover:text-primary-indigo font-semibold hover:underline transition-colors">
+          Sign In
+        </a>
+      </p>
+    </div>
+  </div>
+
+  <div id="toastWrapper" class="fixed top-5 right-5 z-50 pointer-events-none">
+    <div id="toast" class="toast p-4 rounded-lg text-white shadow-lg"></div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { 
+      getAuth, createUserWithEmailAndPassword, updateProfile, 
+      GoogleAuthProvider, signInWithPopup 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // ✅ Your Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyC3GrH4H8rKPqpEA_41NcnX3eIMwuCZ5i4",
+      authDomain: "blessings-clinic.firebaseapp.com",
+      projectId: "blessings-clinic",
+      storageBucket: "blessings-clinic.firebasestorage.appspot.com",
+      messagingSenderId: "1053278745261",
+      appId: "1:1053278745261:web:f00b3853e90a54cc1d8c24"
+    };
+
+    // ✅ Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    function showToast(message, type='success') {
+      const toast = document.getElementById('toast');
+      const colors = { success: 'bg-secondary-blue', error: 'bg-red-600', info: 'bg-primary-indigo' };
+      toast.className = `toast p-4 rounded-lg text-white shadow-lg ${colors[type]}`;
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 4000);
+    }
+
+    function checkPasswordStrength(password) {
+      let strength = 0;
+      if (password.length >= 6) strength++;
+      if (/[a-z]/.test(password)) strength++;
+      if (/[A-Z]/.test(password)) strength++;
+      if (/[0-9]/.test(password)) strength++;
+      if (/[^A-Za-z0-9]/.test(password)) strength++;
+      return strength;
+    }
+
+    async function saveUser(user, name, phone) {
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        name: name || user.displayName || "New User",
+        email: user.email,
+        phone: phone || "",
+        createdAt: serverTimestamp()
+      }, { merge: true });
+    }
+
+    // Google signup
+    document.getElementById("googleSignupBtn").addEventListener("click", async () => {
+      try {
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        await saveUser(result.user);
+        showToast(`Signed in as ${result.user.displayName || result.user.email}`, 'success');
+        setTimeout(()=>window.location.href="login.html",2000);
+      } catch(err) {
+        console.error(err);
+        showToast("Google Sign-up failed: " + err.message, 'error');
+      }
+    });
+
+    // Email signup
+    document.getElementById("signupForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
+
+      if (password !== confirmPassword) {
+        showToast("Passwords do not match.", "error");
+        return;
+      }
+
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        await updateProfile(cred.user, { displayName: name });
+        await saveUser(cred.user, name, phone);
+        showToast("Account created! Redirecting...", "success");
+        setTimeout(()=>window.location.href="login.html",2000);
+      } catch(err) {
+        console.error(err);
+        showToast("Sign-up failed: " + err.message, "error");
+      }
+    });
+
+    // Password strength
+    document.getElementById("password").addEventListener("input", function() {
+      const strength = checkPasswordStrength(this.value);
+      const bar = document.getElementById("passwordStrengthBar");
+      let color="bg-gray-200"; let width=(strength/5)*100;
+      if(strength<=2) color="bg-red-500"; else if(strength<=4) color="bg-yellow-500"; else color="bg-green-500";
+      bar.style.width=`${width}%`; bar.className=`password-strength mt-1 ${color}`;
+    });
+  </script>
+</body>
+</html>

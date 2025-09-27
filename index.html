@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blessings Clinic: Child Care & Diagnostics</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <!-- Font Awesome for icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    // Tailwind CSS custom configuration
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            'primary-indigo': '#3730a3',   // Deep Indigo for headings, authority
+            'secondary-blue': '#3b82f6',   // Medium Blue for call-to-actions
+            'tertiary-slate': '#475569',   // Dark Slate/Gray for text & accents
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Smooth transitions for navigation links */
+    .nav-link {
+      transition: color 0.3s, background-color 0.3s;
+    }
+
+    /* Carousel slide transitions */
+    .carousel-slide {
+      transition: opacity 0.7s ease-in-out;
+    }
+
+    .carousel-slide.active {
+      opacity: 1;
+      z-index: 10;
+    }
+
+    .carousel-slide:not(.active) {
+      opacity: 0;
+      z-index: 0;
+    }
+
+    /* Chatbot fade-in animation */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.3s ease-out forwards;
+    }
+
+    /* Override Tailwind colors for consistency */
+    .text-blue-500 {
+      color: #3b82f6;
+    }
+
+    .bg-blue-500 {
+      background-color: #3b82f6;
+    }
+
+    .hover\:bg-blue-400:hover {
+      background-color: #60a5fa;
+    }
+
+    /* Navigation link hover styles */
+    .nav-link:hover {
+      color: #3730a3;
+      /* primary-indigo */
+      background-color: #eff6ff;
+      /* blue-50 */
+      border-radius: 8px;
+    }
+  </style>
+
+  <script src="script.js" defer></script>
+</head>
+
+<body class="font-sans text-gray-800 bg-gray-50 antialiased">
+
+  <!-- Header & Navigation -->
+  <header>
+    <nav class="fixed w-full top-0 bg-white shadow-lg z-50">
+      <div class="max-w-7xl mx-auto flex justify-between items-center px-8 py-4">
+        <a href="#home" class="text-3xl font-extrabold text-primary-indigo tracking-tight">Blessings Clinic</a>
+
+        <!-- Desktop Navigation -->
+        <ul class="hidden md:flex gap-8 font-semibold text-tertiary-slate">
+          <li><a href="#home" class="nav-link px-3 py-1 rounded-lg">Home</a></li>
+          <li><a href="#specialties" class="nav-link px-3 py-1 rounded-lg">Specialties</a></li>
+          <li><a href="#services" class="nav-link px-3 py-1 rounded-lg">Services</a></li>
+          <li><a href="#reviews" class="nav-link px-3 py-1 rounded-lg">Reviews</a></li>
+          <li><a href="#faq" class="nav-link px-3 py-1 rounded-lg">FAQ</a></li>
+          <li>
+            <a href="#contact"
+              class="nav-link px-4 py-2 rounded-full bg-secondary-blue text-white hover:bg-primary-indigo transition duration-300 shadow-md">
+              Contact & Book
+            </a>
+          </li>
+        </ul>
+
+        <!-- Mobile Hamburger Menu -->
+        <button class="md:hidden flex flex-col gap-1 cursor-pointer p-2" id="mobileMenuBtn"
+          aria-label="Toggle mobile menu">
+          <span class="w-6 h-0.5 bg-primary-indigo rounded"></span>
+          <span class="w-6 h-0.5 bg-primary-indigo rounded"></span>
+          <span class="w-6 h-0.5 bg-primary-indigo rounded"></span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Carousel / Hero Section -->
+    <section id="home" class="relative mt-20 h-[550px] overflow-hidden">
+
+      <!-- Slide 1: Pediatric Care -->
+      <div
+        class="carousel-slide absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-white text-center p-6 active">
+        <div class="max-w-4xl">
+          <h2 class="text-5xl md:text-6xl font-extrabold text-primary-indigo mb-4">Expert Pediatric Care</h2>
+          <p class="text-gray-600 mb-8 text-xl max-w-2xl mx-auto">Compassionate healthcare for children from infancy
+            through adolescence by experienced specialists.</p>
+          <button
+            class="bg-primary-indigo text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:bg-secondary-blue transition duration-300"
+            onclick="scrollToSection('contact')">Book Appointment</button>
+        </div>
+      </div>
+
+      <!-- Slide 2: Diagnostics -->
+      <div
+        class="carousel-slide absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-white text-center p-6">
+        <div class="max-w-4xl">
+          <h2 class="text-5xl md:text-6xl font-extrabold text-primary-indigo mb-4">Advanced Diagnostic Services</h2>
+          <p class="text-gray-600 mb-8 text-xl max-w-2xl mx-auto">State-of-the-art laboratory testing with accurate
+            results and expert pathology analysis.</p>
+          <button
+            class="bg-primary-indigo text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:bg-secondary-blue transition duration-300"
+            onclick="scrollToSection('services')">View Diagnostics</button>
+        </div>
+      </div>
+
+      <!-- Slide 3: General Info -->
+      <div
+        class="carousel-slide absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-white text-center p-6">
+        <div class="max-w-4xl">
+          <h2 class="text-5xl md:text-6xl font-extrabold text-primary-indigo mb-4">Your Health, Our Priority</h2>
+          <p class="text-gray-600 mb-8 text-xl max-w-2xl mx-auto">Patient-centered and comprehensive medical services
+            focused on clinical excellence.</p>
+          <button
+            class="bg-primary-indigo text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:bg-secondary-blue transition duration-300"
+            onclick="scrollToSection('services')">Explore All Services</button>
+        </div>
+      </div>
+
+      <!-- Carousel Indicators -->
+      <div id="carouselIndicators" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-3 z-20"></div>
+    </section>
+
+    <!-- Specialties Section -->
+    <section id="specialties" class="py-24 bg-white">
+      <div class="max-w-7xl mx-auto px-8">
+        <h2 class="text-4xl font-extrabold text-center text-primary-indigo mb-16">Our Core Medical Specialties</h2>
+        <div class="grid md:grid-cols-2 gap-10">
+
+          <!-- Pediatric Care Card -->
+          <div
+            class="bg-gray-50 p-8 rounded-2xl shadow-xl hover:shadow-2xl transition duration-300 transform hover:-translate-y-1 flex flex-col border-t-4 border-secondary-blue">
+            <div
+              class="w-14 h-14 rounded-full bg-secondary-blue text-white flex items-center justify-center mb-6 text-2xl">
+              <i class="fas fa-child"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-primary-indigo mb-3">Pediatric Care</h3>
+            <p class="text-gray-600 mb-4">A complete range of services focused on the unique medical needs of children,
+              ensuring healthy growth and development.</p>
+            <ul class="list-disc list-inside text-gray-600 mb-6 space-y-1 pl-4">
+              <li>Routine Checkups & Well-Child Visits</li>
+              <li>Essential Immunizations & Vaccinations</li>
+              <li>Growth & Developmental Assessments</li>
+            </ul>
+            <!-- Action Links -->
+            <div class="mt-auto flex space-x-6">
+              <a href="pediatrics.html"
+                class="inline-flex items-center text-secondary-blue font-semibold hover:text-primary-indigo transition">
+                More Services <i class="fas fa-chevron-right ml-2 text-sm"></i>
+              </a>
+              <a href="signup.html"
+                class="inline-flex items-center text-secondary-blue font-semibold hover:text-primary-indigo transition">
+                Book an Appointment <i class="fas fa-calendar-check ml-2 text-sm"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- Diagnostic Services Card -->
+          <div
+            class="bg-gray-50 p-8 rounded-2xl shadow-xl hover:shadow-2xl transition duration-300 transform hover:-translate-y-1 flex flex-col border-t-4 border-tertiary-slate">
+            <div
+              class="w-14 h-14 rounded-full bg-tertiary-slate text-white flex items-center justify-center mb-6 text-2xl">
+              <i class="fas fa-vials"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-primary-indigo mb-3">Diagnostic Services</h3>
+            <p class="text-gray-600 mb-4">Rapid and accurate laboratory and pathology services, utilizing advanced
+              technology for reliable diagnosis.</p>
+            <ul class="list-disc list-inside text-gray-600 mb-6 space-y-1 pl-4">
+              <li>Comprehensive Blood & Tissue Analysis</li>
+              <li>Molecular & Genetic Testing</li>
+              <li>Home Sample Collection Facility</li>
+            </ul>
+            <!-- Action Links -->
+            <div class="mt-auto flex space-x-6">
+              <a href="diagnostics.html"
+                class="inline-flex items-center text-secondary-blue font-semibold hover:text-primary-indigo transition">
+                More Services <i class="fas fa-chevron-right ml-2 text-sm"></i>
+              </a>
+              <a href="signup.html"
+                class="inline-flex items-center text-secondary-blue font-semibold hover:text-primary-indigo transition">
+                Book an Appointment <i class="fas fa-calendar-check ml-2 text-sm"></i>
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="py-24 bg-gray-100">
+      <div class="max-w-7xl mx-auto px-8">
+        <h2 class="text-4xl font-extrabold text-center text-primary-indigo mb-16">Comprehensive Medical Services</h2>
+        <div class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
+
+          <!-- General Consultations -->
+          <div
+            class="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition flex flex-col items-center justify-center gap-3 border-b-4 border-secondary-blue">
+            <i class="fas fa-stethoscope text-primary-indigo text-3xl"></i>
+            <span class="font-semibold text-gray-700 text-center">General Consultations</span>
+          </div>
+
+          <!-- Immunization Programs -->
+          <div
+            class="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition flex flex-col items-center justify-center gap-3 border-b-4 border-secondary-blue">
+            <i class="fas fa-syringe text-primary-indigo text-3xl"></i>
+            <span class="font-semibold text-gray-700 text-center">Immunization Programs</span>
+          </div>
+
+          <!-- Child Development Center (New) -->
+          <div
+            class="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition flex flex-col items-center justify-center gap-3 border-b-4 border-secondary-blue">
+            <i class="fas fa-child text-primary-indigo text-3xl"></i>
+            <span class="font-semibold text-gray-700 text-center">Child Development Center</span>
+          </div>
+          <!-- Infectious Disease Testing -->
+          <div
+            class="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition flex flex-col items-center justify-center gap-3 border-b-4 border-secondary-blue">
+            <i class="fas fa-head-side-virus text-primary-indigo text-3xl"></i>
+            <span class="font-semibold text-gray-700 text-center">Infectious Disease Testing</span>
+          </div>
+
+          <!-- Molecular Diagnostics -->
+          <div
+            class="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition flex flex-col items-center justify-center gap-3 border-b-4 border-secondary-blue">
+            <i class="fas fa-dna text-primary-indigo text-3xl"></i>
+            <span class="font-semibold text-gray-700 text-center">Molecular Diagnostics</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Reviews Section -->
+    <section id="reviews" class="py-24 bg-white">
+      <div class="max-w-6xl mx-auto px-8">
+        <h2 class="text-4xl font-extrabold text-center text-primary-indigo mb-12">Patient Testimonials</h2>
+
+        <!-- Review Form -->
+        <form id="reviewForm"
+          class="flex flex-col gap-5 max-w-lg mx-auto p-6 rounded-xl border border-gray-200 shadow-md mb-12">
+          <h3 class="text-xl font-semibold text-primary-indigo mb-2">Share Your Experience</h3>
+          <input type="text" id="reviewerName" name="reviewerName" placeholder="Your Name" required
+            class="border p-3 rounded-lg focus:outline-none focus:border-secondary-blue focus:ring-1 focus:ring-blue-100 transition">
+          <textarea id="reviewText" name="reviewText" rows="4" placeholder="Your valuable feedback..." required
+            class="border p-3 rounded-lg focus:outline-none focus:border-secondary-blue focus:ring-1 focus:ring-blue-100 transition"></textarea>
+          <div class="flex items-center justify-between">
+            <label for="rating" class="text-gray-700 font-medium">Service Rating:</label>
+            <select id="rating" name="rating"
+              class="border p-2 rounded-lg bg-white focus:outline-none focus:border-secondary-blue focus:ring-1 focus:ring-blue-100">
+              <option value="1">1 Star</option>
+              <option value="2">2 Stars</option>
+              <option value="3" selected>3 Stars</option>
+              <option value="4">4 Stars</option>
+              <option value="5">5 Stars</option>
+            </select>
+          </div>
+          <button type="submit"
+            class="bg-secondary-blue text-white px-6 py-3 rounded-full font-semibold hover:bg-primary-indigo transition duration-300 shadow">Submit
+            Review</button>
+        </form>
+
+        <!-- Reviews Display -->
+        <div id="reviewsDisplay" class="max-w-4xl mx-auto flex gap-6 py-4 overflow-x-auto snap-x snap-mandatory">
+          <p class="text-gray-500 italic p-4">No reviews to display yet.</p>
+        </div>
+      </div>
+    </section>
+    <!-- FAQ Section -->
+    <section id="faq" class="py-24 bg-gray-50">
+      <div class="max-w-5xl mx-auto px-8">
+        <h2 class="text-4xl font-extrabold text-center text-primary-indigo mb-16">Frequently Asked Questions</h2>
+        <div class="space-y-4">
+
+          <!-- Clinic Hours -->
+          <div class="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+            <button
+              class="w-full text-left p-5 font-semibold text-primary-indigo flex justify-between items-center faq-btn"
+              aria-expanded="false" aria-controls="faq-content-1">
+              What are your clinic hours?
+              <span class="faq-icon text-secondary-blue"><i class="fas fa-plus"></i><i
+                  class="fas fa-minus hidden"></i></span>
+            </button>
+            <div id="faq-content-1"
+              class="faq-content px-5 pb-5 hidden text-gray-700 border-t border-gray-100 bg-white">
+              Our clinic is open from Monday to Friday, 8:00 AM to 6:00 PM, and on Saturdays and Sundays from 9:00 AM to
+              4:00 PM. We strive to accommodate appointments within these hours for your convenience.
+            </div>
+          </div>
+
+          <!-- Scheduling Appointments -->
+          <div class="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+            <button
+              class="w-full text-left p-5 font-semibold text-primary-indigo flex justify-between items-center faq-btn"
+              aria-expanded="false" aria-controls="faq-content-2">
+              How do I schedule an appointment?
+              <span class="faq-icon text-secondary-blue"><i class="fas fa-plus"></i><i
+                  class="fas fa-minus hidden"></i></span>
+            </button>
+            <div id="faq-content-2"
+              class="faq-content px-5 pb-5 hidden text-gray-700 border-t border-gray-100 bg-white">
+              Appointments can be easily scheduled through our secure online portal on the clinic website. If you
+              experience any difficulty booking online, please contact our administrative team via phone or email, and
+              we will assist you promptly.
+            </div>
+          </div>
+
+          <!-- Services Offered -->
+          <div class="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+            <button
+              class="w-full text-left p-5 font-semibold text-primary-indigo flex justify-between items-center faq-btn"
+              aria-expanded="false" aria-controls="faq-content-3">
+              What services are offered at your clinic?
+              <span class="faq-icon text-secondary-blue"><i class="fas fa-plus"></i><i
+                  class="fas fa-minus hidden"></i></span>
+            </button>
+            <div id="faq-content-3"
+              class="faq-content px-5 pb-5 hidden text-gray-700 border-t border-gray-100 bg-white">
+              We offer comprehensive pediatric care, advanced diagnostic services, immunizations, child development
+              assessments, and telemedicine consultations. Our goal is to provide holistic and high-quality care
+              tailored to each patient’s needs.
+            </div>
+          </div>
+
+          <!-- Telemedicine Appointments -->
+          <div class="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+            <button
+              class="w-full text-left p-5 font-semibold text-primary-indigo flex justify-between items-center faq-btn"
+              aria-expanded="false" aria-controls="faq-content-4">
+              Do you offer telemedicine appointments?
+              <span class="faq-icon text-secondary-blue"><i class="fas fa-plus"></i><i
+                  class="fas fa-minus hidden"></i></span>
+            </button>
+            <div id="faq-content-4"
+              class="faq-content px-5 pb-5 hidden text-gray-700 border-t border-gray-100 bg-white">
+              Yes, we provide telemedicine consultations for appropriate cases. This allows you to consult with our
+              specialists remotely, ensuring convenient and timely care from the comfort of your home.
+            </div>
+          </div>
+
+          <!-- Behavioral Issues -->
+          <div class="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+            <button
+              class="w-full text-left p-5 font-semibold text-primary-indigo flex justify-between items-center faq-btn"
+              aria-expanded="false" aria-controls="faq-content-5">
+              Do you handle behavioral issues in children?
+              <span class="faq-icon text-secondary-blue"><i class="fas fa-plus"></i><i
+                  class="fas fa-minus hidden"></i></span>
+            </button>
+            <div id="faq-content-5"
+              class="faq-content px-5 pb-5 hidden text-gray-700 border-t border-gray-100 bg-white">
+              Yes, our clinic provides support for behavioral and developmental concerns in children. Our experienced
+              pediatric specialists and child development experts work closely with families to address these issues
+              with care and professionalism.
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+    <!-- Contact Section -->
+    <section id="contact" class="py-24 bg-white">
+      <div class="max-w-7xl mx-auto px-8">
+        <h2 class="text-4xl font-extrabold text-center text-primary-indigo mb-12">Contact & Location</h2>
+        <div class="grid md:grid-cols-4 gap-8 text-gray-700 text-center">
+          <div class="p-6 rounded-xl shadow-lg border-t-4 border-secondary-blue flex flex-col items-center">
+            <i class="fas fa-map-marker-alt text-secondary-blue text-3xl mb-3"></i>
+            <p class="font-semibold text-tertiary-slate">Address</p>
+            <p>123 Medical Center Drive, Healthcare City, HC 12345</p>
+          </div>
+          <div class="p-6 rounded-xl shadow-lg border-t-4 border-secondary-blue flex flex-col items-center">
+            <i class="fas fa-phone-alt text-secondary-blue text-3xl mb-3"></i>
+            <p class="font-semibold text-tertiary-slate">Phone</p>
+            <p>(555) 123-4567</p>
+          </div>
+          <div class="p-6 rounded-xl shadow-lg border-t-4 border-secondary-blue flex flex-col items-center">
+            <i class="fas fa-envelope text-secondary-blue text-3xl mb-3"></i>
+            <p class="font-semibold text-tertiary-slate">Email</p>
+            <p>info@blessingsmedical.com</p>
+          </div>
+          <div class="p-6 rounded-xl shadow-lg border-t-4 border-secondary-blue flex flex-col items-center">
+            <i class="fas fa-clock text-secondary-blue text-3xl mb-3"></i>
+            <p class="font-semibold text-tertiary-slate">Hours</p>
+            <p>Mon-Fri: 8:00-18:00 | Sat-Sun: 9:00-16:00</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-800 text-white py-8 text-center">
+    <div class="max-w-7xl mx-auto">
+      <p class="text-gray-400">&copy; 2025 Blessings Child Care And Diagnostics. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Chatbot Widget -->
+  <div class="fixed bottom-8 right-8 z-50">
+    <button id="chatbotBtn"
+      class="bg-primary-indigo hover:bg-secondary-blue text-white px-6 py-4 rounded-full font-semibold shadow-2xl transition-all duration-300 transform hover:scale-105">
+      Chat with BlessBot
+    </button>
+    <div id="chatbot"
+      class="hidden w-96 bg-gray-900 rounded-2xl shadow-2xl mt-4 flex flex-col overflow-hidden fixed bottom-24 right-8">
+      <!-- Chatbot Header -->
+      <div class="flex justify-between items-center p-4 bg-primary-indigo border-b border-indigo-700 rounded-t-2xl">
+        <h3 class="text-white font-semibold text-lg">BlessBot - Virtual Assistant</h3>
+        <button class="text-white hover:text-gray-300 text-xl font-bold" onclick="toggleChatbot()"
+          aria-label="Close Chatbot">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <!-- Chat Messages Area -->
+      <div id="chatMessages" class="p-4 flex-1 overflow-y-auto h-80 text-white space-y-3 bg-gray-800">
+        <div class="text-blue-300 bg-gray-700 p-3 rounded-xl rounded-tl-none inline-block max-w-[80%]">Hello! I’m
+          BlessBot. I can help with clinic info, doctors, services, and appointments.</div>
+      </div>
+
+      <!-- Chat Input Area -->
+      <div class="flex p-4 bg-gray-900 border-t border-gray-700 rounded-b-2xl">
+        <input type="text" id="chatInput" placeholder="Ask a question..."
+          class="flex-1 bg-gray-800 text-white placeholder-gray-400 border border-gray-700 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-indigo focus:border-primary-indigo transition"
+          onkeypress="handleKeyPress(event)" aria-label="Chat input field">
+        <button onclick="sendMessage()"
+          class="ml-3 bg-primary-indigo hover:bg-secondary-blue text-white px-4 py-2 rounded-full transition transform hover:scale-105"
+          aria-label="Send message">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

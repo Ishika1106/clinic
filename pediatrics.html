@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pediatric Care - Blessings Clinic</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script>
+    // Custom Tailwind Configuration for Deep Blue Theme
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            'primary-indigo': '#3730a3', /* Deep, rich Indigo (Authority) */
+            'secondary-blue': '#3b82f6', /* Medium Blue (Call to action) */
+            'tertiary-slate': '#475569', /* Dark Slate/Gray (Text/Accents) */
+            'blue-50': '#eff6ff',       /* Light background for gradients */
+            'blue-100': '#dbeafe',      /* Slightly deeper light blue */
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    /* Apply Inter font family */
+    body {
+        font-family: 'Inter', sans-serif;
+    }
+    
+    /* Fade + slide animation */
+    .fade-slide { 
+      opacity: 0; 
+      transform: translateY(30px); 
+      transition: all 0.75s cubic-bezier(.2,.9,.2,1); 
+    }
+    .fade-slide.show { 
+      opacity: 1; 
+      transform: translateY(0); 
+    }
+
+    /* Toast animation */
+    .toast {
+      transition: transform 280ms ease, opacity 280ms ease;
+      transform: translateY(-10px);
+      opacity: 0;
+    }
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Smooth hover effects */
+    .hover-lift:hover {
+      transform: translateY(-2px);
+    }
+
+    /* Navigation hover effect using secondary-blue */
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: #3b82f6; /* Secondary-blue */
+      transition: width 0.3s ease;
+    }
+    .nav-link:hover::after {
+      width: 100%;
+    }
+  </style>
+</head>
+<body class="font-sans text-gray-800 bg-white">
+
+  <!-- Navigation Bar -->
+  <nav class="fixed w-full top-0 bg-white shadow-md z-50">
+    <div class="max-w-6xl mx-auto flex justify-between items-center px-6 py-4">
+      <div class="text-2xl font-bold text-primary-indigo tracking-wide">Blessings</div>
+      <ul class="hidden md:flex gap-6 font-medium" id="navLinks">
+        <li><a href="index.html" class="px-3 py-1 relative nav-link">Home</a></li>
+        <li><a href="pediatrics.html" class="px-3 py-1 text-primary-indigo font-semibold">Pediatrics</a></li>
+        <li><a href="diagnostics.html" class="px-3 py-1 relative nav-link">Diagnostics</a></li>
+      </ul>
+      <div id="authButtons" class="flex gap-2">
+        <!-- Buttons injected by JS based on login status -->
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="mt-20 bg-gradient-to-r from-blue-100 to-white py-20 text-center fade-slide">
+    <h1 class="text-4xl md:text-5xl font-bold text-primary-indigo mb-4">Pediatric Care</h1>
+    <p class="text-gray-700 max-w-2xl mx-auto mb-6 text-lg">
+      Compassionate care for infants, children, and adolescents. Our experienced pediatricians provide
+      routine checkups, vaccinations, and specialized care for your child's health and development.
+    </p>
+    <button id="mainActionBtn" class="bg-gradient-to-r from-primary-indigo to-secondary-blue text-white px-8 py-3 rounded-lg shadow-lg hover:scale-105 hover:shadow-xl transition-all duration-300">
+      Book an Appointment
+    </button>
+  </section>
+
+  <!-- Doctor Profile Section -->
+  <section class="py-20 bg-gray-50 fade-slide">
+    <div class="max-w-4xl mx-auto px-6 flex flex-col md:flex-row items-center gap-8">
+      <!-- Placeholder image updated to a better link -->
+      <img src="https://thumbs.dreamstime.com/b/smiling-medical-doctor-woman-stethoscope-isolated-over-white-background-35552912.jpg"
+           alt="Dr. Deepika Gulati Dumeer"
+           class="w-64 h-64 object-cover rounded-full shadow-lg hover-lift transition-all duration-300">
+      <div class="text-center md:text-left">
+        <h2 class="text-3xl font-bold text-primary-indigo mb-2">Dr. Deepika Gulati Dumeer</h2>
+        <h3 class="text-xl text-secondary-blue mb-4">Chief Pediatrician</h3>
+        <div class="space-y-2 text-gray-700">
+          <p><strong>Specialization:</strong> Pediatric Medicine, Neonatology</p>
+          <p><strong>Experience:</strong> 15+ years</p>
+          <p><strong>Education:</strong> Harvard Medical School, Johns Hopkins Residency</p>
+          <p><strong>Languages:</strong> English, Spanish</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services & Pricing Section -->
+  <section class="py-20 fade-slide">
+    <div class="max-w-6xl mx-auto px-6">
+      <h2 class="text-3xl font-bold text-primary-indigo text-center mb-12">Our Services & Pricing</h2>
+      <div class="grid md:grid-cols-2 gap-8">
+        <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl hover-lift transition-all duration-300 border-l-4 border-secondary-blue">
+          <h3 class="text-xl font-semibold text-secondary-blue mb-2">Routine Checkups</h3>
+          <p class="text-gray-600 mb-3">General health assessment, growth monitoring, and guidance.</p>
+          <p class="font-bold text-gray-700 text-lg">Price: ₹500</p>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl hover-lift transition-all duration-300 border-l-4 border-green-500">
+          <h3 class="text-xl font-semibold text-secondary-blue mb-2">Vaccinations</h3>
+          <p class="text-gray-600 mb-3">All essential immunizations to keep your child healthy.</p>
+          <p class="font-bold text-gray-700 text-lg">Price: ₹300 per vaccine</p>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl hover-lift transition-all duration-300 border-l-4 border-primary-indigo">
+          <h3 class="text-xl font-semibold text-secondary-blue mb-2">Specialized Consultations</h3>
+          <p class="text-gray-600 mb-3">Neonatology, growth disorders, and chronic illness management.</p>
+          <p class="font-bold text-gray-700 text-lg">Price: ₹800</p>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl hover-lift transition-all duration-300 border-l-4 border-orange-500">
+          <h3 class="text-xl font-semibold text-secondary-blue mb-2">Laboratory Tests</h3>
+          <p class="text-gray-600 mb-3">Blood tests, tissue analysis, and diagnostic services.</p>
+          <p class="font-bold text-gray-700 text-lg">Prices vary</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Action Section (Replaces Appointment Form) -->
+  <section id="actionSection" class="py-20 bg-gray-50 text-center fade-slide">
+    <h2 class="text-3xl font-bold text-primary-indigo mb-6" id="actionTitle">Book Your Child's Next Appointment</h2>
+    <p class="text-gray-700 mb-6" id="actionText">Log in to view your dashboard and use the secure booking system.</p>
+    <div id="actionButtons" class="flex justify-center gap-4">
+      <!-- Buttons injected by JS based on login status -->
+    </div>
+  </section>
+
+  <footer class="bg-primary-indigo text-white py-8 text-center">
+    <div class="max-w-6xl mx-auto px-6">
+      <p class="mb-2">&copy; 2025 Blessings Child Care And Diagnostics. All rights reserved.</p>
+      <p class="text-blue-200">📞 Contact: +91-XXXX-XXXX | 📧 info@blessings.clinic</p>
+    </div>
+  </footer>
+
+  <div id="toastWrapper" class="fixed top-5 right-5 z-50 pointer-events-none">
+    <div id="toast" class="toast p-4 rounded-lg text-white shadow-lg"></div>
+  </div>
+
+  <script>
+    // Utility for showing toasts (kept for general notifications)
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const colors = {
+        success: 'bg-secondary-blue',
+        error: 'bg-red-600',
+        info: 'bg-primary-indigo'
+      };
+      
+      toast.className = `toast p-4 rounded-lg text-white shadow-lg ${colors[type] || colors.success}`;
+      toast.textContent = message;
+      toast.classList.add('show');
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+    
+    // Simple logout function using localStorage state
+    function logout() {
+      localStorage.removeItem('blessingsLoggedIn');
+      localStorage.removeItem('blessingsUser');
+      showToast('Logged out successfully', 'info');
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check login status (Relies on login.html/dashboard.html setting this)
+      const isLoggedIn = localStorage.getItem('blessingsLoggedIn') === 'true';
+      
+      // Get elements
+      const authButtons = document.getElementById('authButtons');
+      const mainActionBtn = document.getElementById('mainActionBtn');
+      const actionButtons = document.getElementById('actionButtons');
+
+      // Initialize page based on login status
+      if (isLoggedIn) {
+        // User is logged in: Nav bar points to dashboard, action section points to dashboard
+        authButtons.innerHTML = `
+          <a href="dashboard.html" class="bg-secondary-blue text-white px-4 py-2 rounded-lg shadow hover:bg-primary-indigo transition">Dashboard</a>
+          <button id="logoutBtn" class="bg-tertiary-slate text-white px-4 py-2 rounded-lg shadow hover:bg-red-500 transition">Logout</button>
+        `;
+        
+        // Main button redirect
+        mainActionBtn.onclick = () => window.location.href = 'dashboard.html';
+        
+        // Action section buttons redirect
+        actionButtons.innerHTML = `
+            <a href="dashboard.html" class="bg-secondary-blue text-white px-6 py-2 rounded-lg shadow hover:scale-105 hover:bg-primary-indigo transition">Go to Dashboard</a>
+        `;
+        
+        // Add logout functionality
+        document.getElementById('logoutBtn').addEventListener('click', logout);
+        
+      } else {
+        // User is not logged in: Nav bar points to login/signup, action section points to login/signup
+        authButtons.innerHTML = `
+          <a href="login.html" class="bg-secondary-blue text-white px-4 py-2 rounded-lg shadow hover:bg-primary-indigo transition">Login</a>
+          <a href="signup.html" class="bg-primary-indigo text-white px-4 py-2 rounded-lg shadow hover:bg-secondary-blue transition">Sign Up</a>
+        `;
+        
+        // Main button redirect
+        mainActionBtn.onclick = () => window.location.href = 'login.html';
+
+        // Action section buttons
+        actionButtons.innerHTML = `
+          <a href="login.html" class="bg-secondary-blue text-white px-6 py-2 rounded-lg shadow hover:scale-105 hover:bg-primary-indigo transition">Login</a>
+          <a href="signup.html" class="bg-primary-indigo text-white px-6 py-2 rounded-lg shadow hover:scale-105 hover:bg-secondary-blue transition">Sign Up</a>
+        `;
+      }
+
+      // Initialize fade-slide animations
+      setTimeout(() => {
+        document.querySelectorAll('.fade-slide').forEach((el, index) => {
+          setTimeout(() => el.classList.add('show'), index * 200);
+        });
+      }, 100);
+    });
+  </script>
+</body>
+</html>
