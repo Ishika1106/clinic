@@ -1,4 +1,129 @@
 // ====================================================================
+// SECTION 1: CORE DATA AND BOT LOGIC (GLOBAL SCOPE)
+// ====================================================================
+
+const botResponses = {
+    greetings: { 
+        positive: [
+            "Hello! I'm BlessBot, and I'm delighted to assist you with any information you need about Blessings Clinic. How may I help you today?", 
+            "A warm welcome! I can share details about our pediatric and diagnostic services, our expert team, and how to schedule your visit. What's on your mind?"
+        ], 
+        neutral: [
+            "Hello! Welcome to Blessings Child Care And Diagnostics. I'm BlessBot, your virtual assistant. Please feel free to ask me about our services, timings, location, or how to book appointments!", 
+            "Hi there! I'm ready to provide you with comprehensive information regarding our clinic's specialized care and diagnostic facilities."
+        ] 
+    },
+    about: [
+        "Blessings Child Care And Diagnostics is a trusted center dedicated to holistic child wellness and precision diagnostics. We are uniquely structured to provide both expert pediatric care for children and advanced diagnostic services supported by state-of-the-art laboratory technology.", 
+        "Our mission is centered on clinical excellence and compassionate care. We strive to be the supportive foundation for your child's health journey, from infancy through adolescence, while offering reliable, cutting-edge diagnostic support for accurate medical decisions."
+    ],
+    timing: [
+        "We are pleased to offer flexible hours to accommodate your family's schedule. Please note our distinct timings for the services:\n\n" +
+        "- Pediatric Clinic Consultation Hours:\n  - Monday to Friday: 9:00 AM – 5:00 PM\n  - Saturday: 9:00 AM – 1:00 PM\n\n" +
+        "- Diagnostics Lab Hours (for sample collection & tests):\n  - Monday to Saturday: 9:00 AM – 9:00 PM\n  - Sunday: 9:00 AM – 4:00 PM"
+    ],
+    location: [
+        "You can find our clinic at our convenient location:\n123 Medical Center Drive, Healthcare City, HC 12345\n\nWe have ample parking available and look forward to providing your family with the best care in a comfortable environment!"
+    ],
+    contact: [
+        "We would be happy to hear from you! You can reach our dedicated administrative team directly:\n- Phone (For Appointments & Emergencies): (555) 123-4567\n- Email (General Inquiries): info@blessingsmedical.com\n\nPlease don't hesitate to reach out with any questions or concerns."
+    ],
+    doctors: [
+        "We are proud to have a team of highly experienced specialists. Our esteemed Chief Pediatrician is Dr. Deepika Gulati Dumeer.", 
+        "Our clinic is led by Dr. Deepika Gulati Dumeer, a recognized specialist dedicated to providing the highest standard of care in Pediatric Medicine."
+    ],
+    doctorDetails: { 
+        "deepika": "Dr. Deepika Gulati Dumeer is our Chief Pediatrician and the heart of our child care services. She is highly experienced in Pediatric Medicine and Neonatology, focusing on the holistic physical, emotional, and developmental health of children. She brings over 15 years of expertise and a compassionate approach to every consultation." 
+    },
+    services: [
+        "We offer a comprehensive suite of services tailored for the whole child and accurate diagnosis. These include:\n\n" +
+        "1. Pediatric Wellness: Routine Checkups, Child Development Assessments, and Vaccinations/Immunizations.\n" +
+        "2. Advanced Diagnostics: State-of-the-art Laboratory Tests (Blood, Tissue, etc.), and Expert Pathology Analysis.\n" +
+        "3. Specialized Consultations and Telemedicine options.\n\n" +
+        "Can I provide more details on our Pediatric Wellness options or our Advanced Diagnostics services?"
+    ],
+    
+    serviceDetails: {
+        pediatric_wellness: [
+            "Our Pediatric Wellness services are focused on preventative care and healthy development. This includes scheduled routine checkups, comprehensive child development assessments, personalized nutritional guidance, and a full schedule of recommended vaccinations/immunizations to keep your child protected and thriving.",
+            "We are here to support your child's physical and emotional growth through our Pediatric Wellness program. Ask about our well-baby care plans or adolescent health consultations!"
+        ],
+        advanced_diagnostics: [
+            "Our Advanced Diagnostics service utilizes a modern, on-site laboratory for fast and accurate testing. We handle everything from routine blood counts and urine analysis to specialized tests (like tissue and genetic testing). Our results are processed quickly and reviewed by our expert pathology team to ensure the most reliable foundation for your child's treatment plan.",
+            "Need a lab test? Our Diagnostics Lab is equipped with state-of-the-art technology to ensure precise results, supporting both pediatric care and general diagnostic needs. No appointment is needed for most routine lab collections."
+        ]
+    },
+    
+    appointment: [
+        "Appointments can be easily scheduled online after you have signed up for an account on our website. Once logged in, simply navigate to your personal dashboard, select 'Book an Appointment', and choose whether you require a Pediatric consultation or a Diagnostic service. Should you encounter any difficulty during the process, please do not hesitate to contact us via phone at (555) 123-4567 or email at info@blessingsmedical.com for prompt assistance. We are here to help!"
+    ],
+    thanks: [
+        "It was my pleasure to assist you! Please feel free to ask if anything else comes to mind.",
+        "You're very welcome! Thank you for reaching out to Blessings Clinic."
+    ],
+    default: [
+        "I sincerely apologize, I'm having trouble understanding your request. I can confidently provide information on our Services, Dr. Deepika, Clinic Timings, Location, or Appointment Booking. Could you please rephrase your question?",
+        "That information might be outside the scope of my current knowledge base. For complex or medical-specific inquiries, please contact our administrative desk directly at (555) 123-4567."
+    ],
+    error: [
+        "I can only provide specific details on our Chief Pediatrician, Dr. Deepika Gulati Dumeer, at this time. Please ask for her details."
+    ]
+};
+
+const getSentiment = (msg) => {
+    const positiveWords = ["great", "excellent", "happy", "love", "fantastic"];
+    return positiveWords.some(word => msg.includes(word)) ? 'positive' : 'neutral';
+};
+
+const getRandomResponse = (arr) => {
+    return arr[Math.floor(Math.random() * arr.length)];
+};
+
+const getBotResponse = (message) => {
+    const msg = message.toLowerCase().trim().replace(/[.,!?'"]/g, '');
+
+    if (msg.includes("hi") || msg.includes("hello") || msg.includes("hey")) {
+        return getRandomResponse(botResponses.greetings[getSentiment(msg)]);
+    }
+
+    // 1. Doctor details (High priority)
+    const doctorMatch = msg.match(/(deepika|dr deepika|pediatrician)/);
+    if (doctorMatch && (doctorMatch[1].includes('deepika') || doctorMatch[1].includes('pediatrician'))) {
+        return botResponses.doctorDetails.deepika;
+    }
+
+    // 2. Specific service details (Handle follow-up questions)
+    if (msg.includes("pediatric wellness") || msg.includes("wellness") || msg.includes("vaccination") || msg.includes("checkup")) {
+        return getRandomResponse(botResponses.serviceDetails.pediatric_wellness);
+    }
+    if (msg.includes("advanced diagnostics") || msg.includes("diagnostics") || msg.includes("lab") || msg.includes("test") || msg.includes("pathology")) {
+        return getRandomResponse(botResponses.serviceDetails.advanced_diagnostics);
+    }
+
+    // 3. General Synonyms
+    const synonyms = {
+        about: [" about the clinic", "information", "details", "what is blessings", "mission"],
+        timing: ["time", "timing", "hours", "open", "schedule", "working"," about clinic timing","timings"],
+        location: ["location", "address", "where", "find", "place", "map"],
+        contact: ["contact", "phone", "email", "reach", "number", "call"],
+        doctors: ["doctor", "physician", "specialist"],
+        services: ["service", "treatment", "care", "facility", "lab", "checkup"],
+        appointment: ["appointment", "book", "schedule visit", "reservation", "consultation"],
+        thanks: ["thank", "thanks", "thank you"],
+        goodbye: ["bye", "see you", "goodbye", "exit"]
+    };
+
+    for (const [category, words] of Object.entries(synonyms)) {
+        for (const word of words) {
+            if (msg.includes(word)) return getRandomResponse(botResponses[category]);
+        }
+    }
+    
+    // 4. Fallback
+    return getRandomResponse(botResponses.default);
+};
+
+// ====================================================================
 // GLOBAL FUNCTIONS - Accessible immediately for inline HTML handlers
 // ====================================================================
 
@@ -6,7 +131,7 @@
 let DOMElements = {}; 
 let reviews = [];
 let autoSlideInterval;
-let currentSlide = 0; // Initialize slide tracker globally
+let currentSlide = 0;
 
 /** Scrolls smoothly to a target section by its ID, accounting for the fixed header. */
 window.scrollToSection = (id) => {
@@ -38,21 +163,13 @@ window.toggleChatbot = () => {
     if (isOpen) {
         // Focus the input when opened
         DOMElements.chatInput?.focus();
-        
-        // Add initial greeting only on first open
-        if (DOMElements.chatMessages && DOMElements.chatMessages.children.length === 0) {
-            // NOTE: The actual addMessage/response logic is defined inside DOMContentLoaded
-            // A simple placeholder or a proper definition inside DOMContentLoaded handles this.
-        }
     }
 };
 
-/** Sends the user's message (defined fully inside DOMContentLoaded). */
-window.sendMessage = () => {
-    // This will be overridden inside DOMContentLoaded
-};
+/** Sends the user's message (placeholder, overridden below). */
+window.sendMessage = () => {};
 
-/** Handles the Enter key press in the chat input. */
+/** Handles the Enter key press in the chat input (calls the function defined in DOMContentLoaded). */
 window.handleKeyPress = (e) => {
     if (e.key === 'Enter') {
         e.preventDefault();
@@ -60,20 +177,19 @@ window.handleKeyPress = (e) => {
     }
 };
 
-/** Deletes a review by ID (defined fully inside DOMContentLoaded). */
-window.deleteReview = (id) => {
-    // This will be overridden inside DOMContentLoaded
-};
+/** Deletes a review by ID (placeholder, overridden below). */
+window.deleteReview = (id) => {};
 
 
 // ====================================================================
-// MAIN DOM CONTENT LOADED LOGIC 
+// SECTION 2: MAIN DOM CONTENT LOADED LOGIC 
 // All elements and internal functions are initialized here.
 // ====================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // -------------------- DOM & STATE INITIALIZATION --------------------
+    // -------------------- 2.1 DOM & STATE INITIALIZATION --------------------
+    // Initialize DOMElements with all required IDs
     DOMElements = {
         slides: document.querySelectorAll('.carousel-slide'),
         indicatorsContainer: document.getElementById('carouselIndicators'),
@@ -87,6 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
         chatInput: document.getElementById('chatInput'),
         chatbot: document.getElementById('chatbot'),
         chatbotBtn: document.getElementById('chatbotBtn'),
+        sendButton: document.getElementById('sendButton'), // Added send button reference
         span1: document.getElementById('span1'),
         span2: document.getElementById('span2'),
         span3: document.getElementById('span3'),
@@ -94,7 +211,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     reviews = JSON.parse(localStorage.getItem('blessingsClinicReviews')) || [];
 
-    // -------------------- MOBILE MENU LOGIC --------------------
+    // Check for essential chat elements
+    if (!DOMElements.chatMessages || !DOMElements.chatInput) {
+        console.error("Essential chat elements (chatMessages or chatInput) not found in the DOM. Chatbot will not function.");
+        // Continue with other functionality if chat elements are missing
+    }
+
+    // -------------------- 2.2 MOBILE MENU LOGIC --------------------
     const toggleMobileMenu = () => {
         if (!DOMElements.mobileMenu) return;
         const isMenuOpen = DOMElements.mobileMenu.classList.toggle('open');
@@ -118,7 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // -------------------- CAROUSEL LOGIC --------------------
+    // -------------------- 2.3 CAROUSEL LOGIC --------------------
     const showSlide = (index) => {
         DOMElements.slides.forEach((slide, i) => {
             slide.classList.toggle('active', i === index);
@@ -196,7 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
 
-    // -------------------- FAQ ACCORDION LOGIC --------------------
+    // -------------------- 2.4 FAQ ACCORDION LOGIC --------------------
     const initFAQ = () => {
         DOMElements.faqButtons.forEach(btn => {
             const content = btn.nextElementSibling;
@@ -232,8 +355,42 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
     initFAQ();
+    
+    // --- FAQ Filtering Logic ---
+    const filterButtons = document.querySelectorAll('.faq-filter-btn');
+    const faqItems = document.querySelectorAll('.faq-item');
 
-    // -------------------- REVIEW SYSTEM LOGIC (FIXED) --------------------
+    function filterFaqs(filter) {
+        filterButtons.forEach(btn => {
+            if (btn.dataset.filter === filter) {
+                btn.classList.add('bg-primary-indigo', 'text-white', 'shadow-md');
+                btn.classList.remove('border', 'border-primary-indigo', 'text-primary-indigo', 'hover:bg-indigo-50');
+            } else {
+                btn.classList.remove('bg-primary-indigo', 'text-white', 'shadow-md');
+                btn.classList.add('border', 'border-primary-indigo', 'text-primary-indigo', 'hover:bg-indigo-50');
+            }
+        });
+
+        faqItems.forEach(item => {
+            const categories = item.getAttribute('data-categories');
+            if (filter === 'all' || categories.includes(filter)) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const filter = button.dataset.filter;
+            filterFaqs(filter);
+        });
+    });
+    filterFaqs('all'); // Initialize filter
+
+
+    // -------------------- 2.5 REVIEW SYSTEM LOGIC --------------------
 
     const saveReviews = () => {
         localStorage.setItem('blessingsClinicReviews', JSON.stringify(reviews));
@@ -252,7 +409,7 @@ document.addEventListener('DOMContentLoaded', () => {
         container.classList.add('flex', 'gap-6', 'py-4', 'overflow-x-auto', 'snap-x', 'snap-mandatory', 'justify-start');
         container.innerHTML = reviews.map(r => {
             
-            // --- FIX: Using fas for solid and far for regular (empty) stars ---
+            // Using fas for solid and far for regular (empty) stars
             const stars = Array(5).fill(0).map((_, i) => i < r.rating ?
                 '<i class="fas fa-star text-yellow-500"></i>' :
                 '<i class="far fa-star text-yellow-500"></i>'
@@ -273,7 +430,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join('');
     };
 
-    // Override global placeholder
+    // Override global placeholder for deleteReview
     window.deleteReview = (id) => {
         reviews = reviews.filter(r => r.id !== id);
         saveReviews();
@@ -289,7 +446,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const rating = parseInt(formData.get('rating'));
 
         if (!text || !rating) {
-            alert('Please enter your feedback and select a star rating.');
+            // Using console.error instead of alert as per instructions for iFrame environment
+            console.error('Please enter your feedback and select a star rating.');
             return;
         }
 
@@ -305,74 +463,15 @@ document.addEventListener('DOMContentLoaded', () => {
         saveReviews();
         displayReviews();
         form.reset();
-        alert('Thank you for sharing your experience!');
+        // Feedback message for successful submission
+        console.log('Thank you for sharing your experience!');
     };
 
     DOMElements.reviewForm?.addEventListener('submit', submitReview);
     displayReviews(); // Initial display of reviews
 
-    // -------------------- CHATBOT CORE LOGIC --------------------
 
-    const botResponses = {
-        greetings: { positive: ["Hello! I'm BlessBot, happy to help you with Blessings Clinic information today. How can I assist?", "Hi there! What can I do for you?"], neutral: ["Hello! Welcome to Blessings Child Care And Diagnostics. I'm BlessBot. How can I assist you today?", "Hi there! I can share details about our clinic, our doctors, services, and how to book appointments."] },
-        about: ["Blessings Child Care And Diagnostics is a specialized clinic focused on **pediatric care** and **advanced diagnostics**. We provide essential services like checkups, vaccinations, and laboratory testing.", "Our mission is to provide compassionate, high-quality care for infants, children, and adolescents, supported by state-of-the-art diagnostic facilities."],
-        timing: ["Our clinic hours are:\n- **Monday to Friday:** 8:00 AM – 6:00 PM\n- **Saturday & Sunday:** 9:00 AM – 4:00 PM"],
-        location: ["We are located at:\n**123 Medical Center Drive, Healthcare City, HC 12345**\n\nWe look forward to seeing you!"],
-        contact: ["You can reach us directly:\n- **Phone (Appointments):** (555) 123-4567\n- **Email (General Inquiries):** info@blessingsmedical.com"],
-        doctors: ["Our Chief Pediatrician is **Dr. Deepika Gulati Dumeer**.", "We are led by Dr. Deepika Gulati Dumeer, a specialist in Pediatric Medicine."],
-        doctorDetails: { "deepika": "Dr. Deepika Gulati Dumeer is our **Chief Pediatrician**. She specializes in Pediatric Medicine and Neonatology, with 15+ years of experience. Her focus is on holistic child health." },
-        services: ["Our core services include:\n1. **Routine Checkups**\n2. **Vaccinations/Immunizations**\n3. **Specialized Consultations**\n4. **Laboratory Tests (Blood, Tissue)**\n\nWhich service interests you the most?"],
-        appointment: ["To book an appointment, please click the **Contact & Book** link in the navigation, or call us directly at (555) 123-4567.","You can schedule easily online by visiting the 'Contact' section."],
-        thanks: ["You're very welcome! Is there anything else I can clarify?","Happy to assist you!"],
-        default: ["I'm sorry, I couldn't understand that request. I can provide details on **Services, Dr. Deepika, Timing, or Booking**. Can you try phrasing your question differently?","That information might be outside my current knowledge base. For complex inquiries, please call the clinic directly."],
-        error: ["I can only provide details on our Chief Pediatrician, **Dr. Deepika Gulati Dumeer**. Please ask about her!","Could you please clarify? I only have information for Dr. Deepika, not Dr. Nitin."]
-    };
-
-    const getSentiment = (msg) => {
-        const positiveWords = ["great", "excellent", "happy", "love", "fantastic"];
-        return positiveWords.some(word => msg.includes(word)) ? 'positive' : 'neutral';
-    };
-
-    const getRandomResponse = (arr) => {
-        return arr[Math.floor(Math.random() * arr.length)];
-    };
-
-    const getBotResponse = (message) => {
-        const msg = message.toLowerCase().trim().replace(/[.,!?'"]/g, '');
-
-        if (msg.includes("hi") || msg.includes("hello") || msg.includes("hey")) {
-            return getRandomResponse(botResponses.greetings[getSentiment(msg)]);
-        }
-
-        const doctorMatch = msg.match(/(deepika|dr deepika|pediatrician|dr nitin|nitin|pathologist)/);
-        if (doctorMatch) {
-            const key = doctorMatch[1];
-            if (key.includes('deepika') || key.includes('pediatrician')) return botResponses.doctorDetails.deepika;
-            if (key.includes('nitin') || key.includes('pathologist')) return getRandomResponse(botResponses.error);
-        }
-
-        const synonyms = {
-            about: ["about", "clinic", "information", "details", "what is blessings", "mission"],
-            timing: ["time", "timing", "hours", "open", "schedule", "working"],
-            location: ["location", "address", "where", "find", "place", "map"],
-            contact: ["contact", "phone", "email", "reach", "number", "call"],
-            doctors: ["doctor", "physician", "specialist"],
-            services: ["service", "treatment", "care", "facility", "test", "lab", "checkup"],
-            appointment: ["appointment", "book", "schedule visit", "reservation", "consultation"],
-            thanks: ["thank", "thanks", "thank you"],
-            goodbye: ["bye", "see you", "goodbye", "exit"]
-        };
-
-        for (const [category, words] of Object.entries(synonyms)) {
-            for (const word of words) {
-                if (msg.includes(word)) return getRandomResponse(botResponses[category]);
-            }
-        }
-        return getRandomResponse(botResponses.default);
-    };
-
-
-    // -------------------- CHATBOT UI & FUNCTIONALITY --------------------
+    // -------------------- 2.6 CHATBOT UI & FUNCTIONALITY --------------------
 
     /** Adds a typing indicator to the chat window. */
     const addTypingIndicator = () => {
@@ -468,7 +567,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
 
-    // --- FIX: OVERRIDE global placeholder with the fully defined, working logic ---
+    // Override global placeholder for sendMessage
     window.sendMessage = () => {
         if (!DOMElements.chatInput) return;
         const message = DOMElements.chatInput.value.trim();
@@ -478,14 +577,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         addMessage(message, 'user', false);
         DOMElements.chatInput.value = '';
-        const response = getBotResponse(message);
+        
+        // Use the globally defined bot logic
+        const response = getBotResponse(message); 
         addMessage(response, 'bot', true);
     };
     
-    // Initial greeting if chatbot is opened (only show if no messages exist)
-    if (DOMElements.chatbot && DOMElements.chatMessages) {
-         if (!DOMElements.chatbot.classList.contains('hidden') && DOMElements.chatMessages.children.length === 0) {
-             addMessage(getRandomResponse(botResponses.greetings.neutral), 'bot', false);
-         }
+    // Initial greeting if chatbot is visible (only show if no messages exist)
+    if (DOMElements.chatbot && DOMElements.chatMessages.children.length === 0) {
+        // Use a slight delay to ensure all UI is painted before the greeting appears
+        setTimeout(() => {
+            addMessage(getRandomResponse(botResponses.greetings.neutral), 'bot', false);
+        }, 300);
     }
+
+    // Event listener for sending messages on Enter key (already set globally, but re-added here for safety/clarity)
+    DOMElements.chatInput?.addEventListener('keypress', window.handleKeyPress);
+
+    // Event listener for send button
+    DOMElements.sendButton?.addEventListener('click', window.sendMessage);
 });
