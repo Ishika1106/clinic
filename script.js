@@ -63,7 +63,7 @@ const botResponses = {
     ],
     default: [
         "I sincerely apologize, I'm having trouble understanding your request. I can confidently provide information on our Services, Dr. Deepika, Clinic Timings, Location, or Appointment Booking. Could you please rephrase your question?",
-        "That information might be outside the scope of my current knowledge base. For complex or medical-specific inquiries, please contact our administrative desk directly at (555) 123-4567."
+        "That information might be outside the scope of my current knowledge base. For complex or medical-specific inquiries, please contact us at (555) 123-4567."
     ],
     error: [
         "I can only provide specific details on our Chief Pediatrician, Dr. Deepika Gulati Dumeer, at this time. Please ask for her details."
@@ -102,14 +102,14 @@ const getBotResponse = (message) => {
 
     // 3. General Synonyms
     const synonyms = {
-        about: [" about the clinic", "information", "details", "what is blessings", "mission"],
-        timing: ["time", "timing", "hours", "open", "schedule", "working"," about clinic timing","timings"],
+        about: [ "why choose us","information", "details", "what is blessings", "mission","choose"],
+        timing: ["time", "timing", "hours", "open", "schedule", "working"," about clinic timing","timings","about the clinic timing"],
         location: ["location", "address", "where", "find", "place", "map"],
         contact: ["contact", "phone", "email", "reach", "number", "call"],
         doctors: ["doctor", "physician", "specialist"],
         services: ["service", "treatment", "care", "facility", "lab", "checkup"],
         appointment: ["appointment", "book", "schedule visit", "reservation", "consultation"],
-        thanks: ["thank", "thanks", "thank you"],
+        thanks: ["thank", "thanks", "thank you","thank you so much"],
         goodbye: ["bye", "see you", "goodbye", "exit"]
     };
 
